@@ -70,7 +70,6 @@
             const [currentPage, setCurrentPage] = useState('home'); 
             const [menuOpen, setMenuOpen] = useState(false);
             
-            // Check URL for the magic sign link
             const urlParams = new URLSearchParams(window.location.search);
             const signId = urlParams.get('sign');
 
@@ -87,7 +86,6 @@
             const handleLogout = async () => { await supabase.auth.signOut(); setCurrentPage('home'); setMenuOpen(false); };
             const navigateTo = (page) => { setCurrentPage(page); setMenuOpen(false); window.scrollTo(0, 0); };
 
-            // If the URL has ?sign=, show the signing page immediately
             if (signId) {
                 if (!session) return <AuthPage onLogin={setSession} isSigning={true} signId={signId} />;
                 return <SigningPage agreementId={signId} session={session} />;
@@ -137,7 +135,6 @@
             );
         }
 
-        // --- PARTY B SIGNING PAGE (LOGIN REQUIRED) ---
         function SigningPage({ agreementId, session }) {
             const [agreement, setAgreement] = useState(null);
             const [loading, setLoading] = useState(true);
@@ -150,7 +147,6 @@
                 if (error || !data) {
                     setError('Agreement not found.');
                 } else {
-                    // SECURITY CHECK: Does the logged-in email match Party B's email?
                     if (data.party_b_wallet.toLowerCase() !== session.user.email.toLowerCase()) {
                         setError(`Access Denied. This agreement was sent to a different email address.`);
                     } else {
@@ -205,7 +201,6 @@
             );
         }
 
-        // --- PARTY A DASHBOARD ---
         function UserDashboard({ session }) {
             const [isActive, setIsActive] = useState(false);
             const [agreements, setAgreements] = useState([]);
@@ -218,7 +213,7 @@
             }, []);
 
             useEffect(() => {
-                const interval = setInterval(() => { fetchAgreements(); }, 5000); // Auto-refresh
+                const interval = setInterval(() => { fetchAgreements(); }, 5000);
                 return () => clearInterval(interval);
             }, []);
 
@@ -228,7 +223,12 @@
             };
 
             const fetchAgreements = async () => {
-                const { data } = await supabase.from('agreements').select('*').order('created_at', { ascending: false });
+                // SECURITY FIX: Only fetch agreements where the user is the creator (Party A)
+                const { data } = await supabase
+                    .from('agreements')
+                    .select('*')
+                    .eq('created_by', session.user.id) 
+                    .order('created_at', { ascending: false });
                 if (data) setAgreements(data);
             };
 
@@ -332,7 +332,6 @@
             );
         }
 
-        // --- PUBLIC PAGES & AUTH ---
         function AuthPage({ onLogin, isSigning, signId }) {
             const [email, setEmail] = useState('');
             const [password, setPassword] = useState('');
@@ -345,7 +344,7 @@
                     const { error, data } = await supabase.auth.signInWithPassword({ email, password });
                     if (error) alert(error.message); 
                     else {
-                        if (isSigning) window.location.href = `/?sign=${signId}`; // Reload to signing page
+                        if (isSigning) window.location.href = `/?sign=${signId}`; 
                         else onLogin(data.session);
                     }
                 } else {
