@@ -81,6 +81,8 @@
         .seal.sealed { background: var(--success); color: white; }
         .seal.denied { background: var(--danger); color: white; }
         
+        .founding-badge { background: var(--warning); color: #000; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
+        
         @media (max-width: 768px) {
             h1 { font-size: 2rem; }
             .page-container { padding: 32px 16px; }
@@ -211,15 +213,48 @@
         }
 
         function PricingPage({ navigateTo }) {
+            const [spotsLeft, setSpotsLeft] = useState(25);
+            const [loading, setLoading] = useState(true);
+
+            useEffect(() => {
+                const fetchCount = async () => {
+                    const { count, error } = await supabase
+                        .from('users')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('is_active', true);
+
+                    if (!error && count !== null) {
+                        setSpotsLeft(Math.max(0, 25 - count));
+                    }
+                    setLoading(false);
+                };
+                fetchCount();
+            }, []);
+
+            if (loading) return <div className="page-container"><h2>Loading...</h2></div>;
+
             return (
                 <div className="page-container">
                     <h2>Protect your business.</h2>
-                    <div className="card" style={{borderColor: 'var(--primary)', textAlign: 'center'}}>
-                        <h1 style={{fontSize: '2.5rem', marginBottom: '8px'}}>$19.99<span style={{fontSize: '1rem', color: 'var(--muted)'}}>/month</span></h1>
-                        <p style={{marginBottom: '24px'}}>Send USDT (TRC-20) to activate your account:</p>
-                        <div className="wallet-box">{TRUST_WALLET}</div>
-                        <button onClick={() => navigateTo('auth')}>I Have Paid - Sign In</button>
-                    </div>
+                    
+                    {spotsLeft > 0 ? (
+                        <div className="card" style={{borderColor: 'var(--primary)', textAlign: 'center'}}>
+                            <div style={{background: 'var(--warning)', color: '#000', padding: '12px', borderRadius: '6px', fontWeight: '800', marginBottom: '20px', fontSize: '1.1rem'}}>
+                                ⚠️ Founding Member Price: Only {spotsLeft} spots left!
+                            </div>
+                            <h1 style={{fontSize: '3rem', marginBottom: '8px'}}>$19.99<span style={{fontSize: '1rem', color: 'var(--muted)'}}>/month</span></h1>
+                            <p style={{marginBottom: '24px'}}>Send USDT (TRC-20) to activate your account:</p>
+                            <div className="wallet-box">{TRUST_WALLET}</div>
+                            <button onClick={() => navigateTo('auth')}>I Have Paid - Sign In</button>
+                        </div>
+                    ) : (
+                        <div className="card" style={{borderColor: 'var(--primary)', textAlign: 'center'}}>
+                            <h1 style={{fontSize: '3rem', marginBottom: '8px'}}>$49.99<span style={{fontSize: '1rem', color: 'var(--muted)'}}>/month</span></h1>
+                            <p style={{marginBottom: '24px'}}>The Founding Member spots are gone. Standard pricing applies.</p>
+                            <div className="wallet-box">{TRUST_WALLET}</div>
+                            <button onClick={() => navigateTo('auth')}>I Have Paid - Sign In</button>
+                        </div>
+                    )}
                 </div>
             );
         }
@@ -280,6 +315,7 @@
             const [partyBEmail, setPartyBEmail] = useState('');
             const [text, setText] = useState('');
             const [submitting, setSubmitting] = useState(false);
+            const [isFoundingMember, setIsFoundingMember] = useState(false);
 
             useEffect(() => {
                 fetchUserStatus(); fetchAgreements();
@@ -292,7 +328,20 @@
 
             const fetchUserStatus = async () => {
                 const { data } = await supabase.from('users').select('is_active').eq('id', session.user.id).single();
-                if (data) setIsActive(data.is_active);
+                if (data) {
+                    setIsActive(data.is_active);
+                    
+                    if (data.is_active) {
+                        const { count } = await supabase
+                            .from('users')
+                            .select('*', { count: 'exact', head: true })
+                            .eq('is_active', true);
+                        
+                        if (count && count <= 25) {
+                            setIsFoundingMember(true);
+                        }
+                    }
+                }
             };
 
             const fetchAgreements = async () => {
@@ -337,7 +386,12 @@
 
             return (
                 <div className="page-container">
-                    <h2 style={{marginBottom: '24px'}}>Dashboard</h2>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px'}}>
+                        <h2 style={{margin: 0}}>Dashboard</h2>
+                        {isFoundingMember && (
+                            <span className="founding-badge">⭐ Founding Member</span>
+                        )}
+                    </div>
                     
                     <div className="card">
                         <h3>Subscription Status</h3>
