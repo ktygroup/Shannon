@@ -9,50 +9,83 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap');
-        :root { --primary: #38bdf8; --dark: #0f172a; --card: #1e293b; --text: #f8fafc; --muted: #94a3b8; --border: #334155; --warning: #eab308; --success: #22c55e; --danger: #ef4444; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root { 
+            --primary: #38bdf8; 
+            --dark: #0f172a; 
+            --card: #1e293b; 
+            --text: #f8fafc; 
+            --muted: #94a3b8; 
+            --border: #334155; 
+            --warning: #eab308; 
+            --success: #22c55e; 
+            --danger: #ef4444; 
+        }
+        
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: var(--dark); color: var(--text); line-height: 1.7; }
-        nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; background: rgba(15, 23, 42, 0.95); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
-        .logo { font-size: 1.5rem; font-weight: 900; color: var(--primary); cursor: pointer; letter-spacing: 2px; }
-        .gear-icon { font-size: 1.8rem; cursor: pointer; user-select: none; }
+        body { background: var(--dark); color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+        
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
+        .logo { font-size: 1.25rem; font-weight: 700; color: var(--primary); cursor: pointer; letter-spacing: 1.5px; }
+        .gear-icon { font-size: 1.5rem; cursor: pointer; user-select: none; }
+        
         .drawer-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         .drawer-overlay.open { opacity: 1; pointer-events: auto; }
-        .drawer { position: fixed; top: 0; right: -300px; width: 300px; height: 100vh; background: var(--card); z-index: 1001; transition: right 0.3s; padding: 30px; display: flex; flex-direction: column; gap: 15px; border-left: 1px solid var(--border); }
+        .drawer { position: fixed; top: 0; right: -280px; width: 280px; height: 100vh; background: var(--card); z-index: 1001; transition: right 0.3s ease; padding: 24px; display: flex; flex-direction: column; gap: 12px; border-left: 1px solid var(--border); }
         .drawer.open { right: 0; }
-        .drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
-        .drawer-header h3 { color: var(--primary); }
-        .close-btn { cursor: pointer; font-size: 1.5rem; color: var(--muted); }
-        .drawer-link { padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; cursor: pointer; color: var(--text); font-weight: 600; }
-        .page-container { max-width: 900px; margin: 0 auto; padding: 70px 20px; min-height: 80vh; }
-        h1 { font-size: 3.5rem; font-weight: 900; line-height: 1.1; margin-bottom: 20px; }
+        .drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+        .drawer-header h3 { color: var(--primary); font-size: 1.1rem; }
+        .close-btn { cursor: pointer; font-size: 1.2rem; color: var(--muted); }
+        .drawer-link { padding: 10px 12px; background: rgba(255,255,255,0.03); border-radius: 6px; cursor: pointer; color: var(--text); font-weight: 500; font-size: 0.95rem; transition: background 0.2s; }
+        .drawer-link:hover { background: rgba(56, 189, 248, 0.1); color: var(--primary); }
+        
+        .page-container { max-width: 800px; margin: 0 auto; padding: 48px 20px; min-height: 80vh; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        
+        h1 { font-size: 2.5rem; font-weight: 700; line-height: 1.2; margin-bottom: 16px; letter-spacing: -0.5px; }
         h1 span { color: var(--primary); }
-        h2 { font-size: 2.2rem; margin-bottom: 20px; font-weight: 800; border-bottom: 2px solid var(--border); padding-bottom: 10px; display: inline-block; }
-        h3 { font-size: 1.4rem; margin-bottom: 15px; color: var(--primary); font-weight: 600; }
-        p { margin-bottom: 20px; color: #cbd5e1; font-size: 1.1rem; }
-        .hook { font-size: 1.3rem; font-weight: 600; font-style: italic; margin-bottom: 40px; border-left: 4px solid var(--primary); padding: 15px 20px; background: linear-gradient(90deg, rgba(56,189,248,0.1) 0%, transparent 100%); }
-        .card { background: var(--card); border-radius: 16px; padding: 40px; margin-bottom: 30px; border: 1px solid var(--border); }
-        button { background: var(--primary); color: var(--dark); border: none; padding: 16px 32px; border-radius: 8px; font-weight: 800; font-size: 1rem; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
+        h2 { font-size: 1.75rem; margin-bottom: 20px; font-weight: 600; color: var(--text); }
+        h3 { font-size: 1.15rem; margin-bottom: 12px; color: var(--primary); font-weight: 600; }
+        p { margin-bottom: 16px; color: var(--muted); font-size: 1rem; }
+        
+        .video-container { position: relative; width: 100%; padding-bottom: 56.25%; border-radius: 12px; overflow: hidden; margin-bottom: 32px; border: 1px solid var(--border); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        
+        .card { background: var(--card); border-radius: 12px; padding: 28px; margin-bottom: 24px; border: 1px solid var(--border); }
+        
+        button { background: var(--primary); color: var(--dark); border: none; padding: 14px 24px; border-radius: 6px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; width: 100%; }
         button:hover { background: #7dd3fc; }
         button:disabled { background: #475569; color: var(--muted); cursor: not-allowed; }
         .btn-danger { background: var(--danger); color: white; }
         .btn-success { background: var(--success); color: white; }
-        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
-        input, textarea { width: 100%; padding: 16px; margin: 10px 0; border-radius: 8px; border: 1px solid var(--border); background: var(--dark); color: white; font-size: 1rem; }
-        .wallet-box { background: var(--dark); border: 2px dashed var(--primary); padding: 25px; border-radius: 12px; text-align: center; margin: 25px 0; font-family: monospace; font-size: 1.2rem; color: var(--primary); font-weight: bold; }
-        .user-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding: 20px 0; }
-        .toggle-btn { padding: 10px 20px; font-size: 0.9rem; width: auto; }
-        .certificate-box { position: relative; background: #0f172a; border: 2px solid var(--border); border-radius: 12px; padding: 30px; margin-top: 25px; overflow: hidden; }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+        .btn-outline:hover { background: rgba(56, 189, 248, 0.1); }
+        
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: 1px solid var(--border); background: var(--dark); color: white; font-size: 0.95rem; }
+        input:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.1); }
+        
+        .wallet-box { background: var(--dark); border: 1px dashed var(--primary); padding: 16px; border-radius: 8px; text-align: center; margin: 16px 0; font-family: monospace; font-size: 0.95rem; color: var(--primary); word-break: break-all; }
+        
+        .user-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding: 16px 0; }
+        .toggle-btn { padding: 8px 16px; font-size: 0.85rem; width: auto; }
+        
+        .certificate-box { position: relative; background: var(--dark); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-top: 16px; overflow: hidden; }
         .certificate-box.sealed { border-color: var(--success); }
         .certificate-box.pending { border-color: var(--warning); }
         .certificate-box.denied { border-color: var(--danger); }
-        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg); font-size: 8rem; font-weight: 900; color: rgba(255, 255, 255, 0.03); pointer-events: none; z-index: 0; white-space: nowrap; }
+        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-20deg); font-size: 5rem; font-weight: 700; color: rgba(255, 255, 255, 0.02); pointer-events: none; z-index: 0; white-space: nowrap; }
         .cert-content { position: relative; z-index: 1; }
-        .seal { display: inline-block; padding: 8px 16px; border-radius: 4px; font-size: 0.85rem; font-weight: 900; margin-bottom: 20px; text-transform: uppercase; }
+        .seal { display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
         .seal.pending { background: var(--warning); color: #000; }
         .seal.sealed { background: var(--success); color: white; }
         .seal.denied { background: var(--danger); color: white; }
-        @media (max-width: 768px) { h1 { font-size: 2.5rem; } .page-container { padding: 40px 20px; } .card { padding: 25px; } nav { padding: 15px 20px; } }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .page-container { padding: 32px 16px; }
+            .card { padding: 20px; }
+        }
     </style>
 </head>
 <body>
@@ -135,67 +168,107 @@
             );
         }
 
-        function SigningPage({ agreementId, session }) {
-            const [agreement, setAgreement] = useState(null);
-            const [loading, setLoading] = useState(true);
-            const [error, setError] = useState('');
+        function HomePage({ navigateTo }) {
+            return (
+                <div className="page-container">
+                    <div className="video-container">
+                        <iframe 
+                            src="https://www.youtube.com/embed/TIJqeIPzWCU?autoplay=0&controls=1" 
+                            title="Shannon Demo"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowFullScreen>
+                        </iframe>
+                    </div>
 
-            useEffect(() => { fetchAgreement(); }, [agreementId]);
+                    <h1>Stop arguing.<br/><span>Start proving.</span></h1>
+                    <p className="hook" style={{borderLeft: '3px solid var(--primary)', paddingLeft: '16px', marginBottom: '32px', fontStyle: 'italic'}}>"He said it was a partnership. She said it was a favor. Without proof, it's just a broken promise."</p>
+                    
+                    <div className="card">
+                        <h3>The Wild West of Digital Deals</h3>
+                        <p>Shannon records the absolute truth of who agreed to what, and exactly when. No more screenshots. No more broken promises.</p>
+                        <div style={{display: 'flex', gap: '12px', marginTop: '20px'}}>
+                            <button onClick={() => navigateTo('auth')}>Create Record</button>
+                            <button className="btn-outline" onClick={() => navigateTo('about')}>Learn More</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
 
-            const fetchAgreement = async () => {
-                const { data, error } = await supabase.from('agreements').select('*').eq('id', agreementId).single();
-                if (error || !data) {
-                    setError('Agreement not found.');
-                } else {
-                    if (data.party_b_wallet.toLowerCase() !== session.user.email.toLowerCase()) {
-                        setError(`Access Denied. This agreement was sent to a different email address.`);
-                    } else {
-                        setAgreement(data);
+        function AboutPage({ navigateTo }) {
+            return (
+                <div className="page-container">
+                    <h2>The Anatomy of Trust.</h2>
+                    <div className="card">
+                        <h3>How It Works</h3>
+                        <p>1. Party A creates an agreement and sends a secure link.</p>
+                        <p>2. Party B logs in (to verify their identity) and clicks Accept.</p>
+                        <p>3. The agreement is cryptographically sealed. Party A cannot fake this.</p>
+                        <button onClick={() => navigateTo('pricing')} style={{marginTop: '20px'}}>See Pricing</button>
+                    </div>
+                </div>
+            );
+        }
+
+        function PricingPage({ navigateTo }) {
+            return (
+                <div className="page-container">
+                    <h2>Protect your business.</h2>
+                    <div className="card" style={{borderColor: 'var(--primary)', textAlign: 'center'}}>
+                        <h1 style={{fontSize: '2.5rem', marginBottom: '8px'}}>$19.99<span style={{fontSize: '1rem', color: 'var(--muted)'}}>/month</span></h1>
+                        <p style={{marginBottom: '24px'}}>Send USDT (TRC-20) to activate your account:</p>
+                        <div className="wallet-box">{TRUST_WALLET}</div>
+                        <button onClick={() => navigateTo('auth')}>I Have Paid - Sign In</button>
+                    </div>
+                </div>
+            );
+        }
+
+        function ContactPage() {
+            return (
+                <div className="page-container">
+                    <h2>Contact Us</h2>
+                    <div className="card">
+                        <p style={{fontSize: '1.1rem', color: 'var(--primary)', fontWeight: '500'}}>vision.ktygroup@gmail.com</p>
+                    </div>
+                </div>
+            );
+        }
+
+        function AuthPage({ onLogin, isSigning, signId }) {
+            const [email, setEmail] = useState('');
+            const [password, setPassword] = useState('');
+            const [isLogin, setIsLogin] = useState(true);
+            const [loading, setLoading] = useState(false);
+
+            const handleAuth = async (e) => {
+                e.preventDefault(); setLoading(true);
+                if (isLogin) {
+                    const { error, data } = await supabase.auth.signInWithPassword({ email, password });
+                    if (error) alert(error.message); 
+                    else {
+                        if (isSigning) window.location.href = `/?sign=${signId}`; 
+                        else onLogin(data.session);
                     }
+                } else {
+                    const { error } = await supabase.auth.signUp({ email, password });
+                    if (error) alert(error.message); 
+                    else alert("Account created! You can now log in.");
                 }
                 setLoading(false);
             };
 
-            const handleSign = async (decision) => {
-                const { error } = await supabase.from('agreements')
-                    .update({ party_b_status: decision, status: decision === 'accepted' ? 'sealed' : 'denied' })
-                    .eq('id', agreement.id);
-                
-                if (error) alert("Error: " + error.message);
-                else {
-                    setAgreement({ ...agreement, party_b_status: decision, status: decision === 'accepted' ? 'sealed' : 'denied' });
-                }
-            };
-
-            if (loading) return <div className="page-container"><h2>Loading Agreement...</h2></div>;
-            if (error) return <div className="page-container"><h2 style={{color: 'var(--danger)'}}>{error}</h2></div>;
-
             return (
-                <div className="page-container">
-                    <h2>Review Agreement</h2>
-                    <div className={`certificate-box ${agreement.status === 'sealed' ? 'sealed' : agreement.status === 'denied' ? 'denied' : 'pending'}`}>
-                        <div className="watermark">SHANNON</div>
-                        <div className="cert-content">
-                            <span className={`seal ${agreement.status === 'sealed' ? 'sealed' : agreement.status === 'denied' ? 'denied' : 'pending'}`}>
-                                {agreement.status === 'sealed' ? '🛡️ Agreement Sealed' : agreement.status === 'denied' ? '❌ Agreement Denied' : '⏳ Awaiting Your Decision'}
-                            </span>
-                            <p><strong>From:</strong> {agreement.party_a_wallet}</p>
-                            <p><strong>Agreement:</strong> {agreement.agreement_text}</p>
-                            
-                            {agreement.status === 'pending' && (
-                                <div style={{display: 'flex', gap: '10px', marginTop: '20px'}}>
-                                    <button onClick={() => handleSign('accepted')} className="btn-success" style={{flex: 1}}>Accept & Sign</button>
-                                    <button onClick={() => handleSign('denied')} className="btn-danger" style={{flex: 1}}>Deny</button>
-                                </div>
-                            )}
-                            
-                            {agreement.status === 'sealed' && <p style={{color: 'var(--success)', fontWeight: 'bold'}}>You have officially signed this agreement. Party A has been notified.</p>}
-                            {agreement.status === 'denied' && <p style={{color: 'var(--danger)', fontWeight: 'bold'}}>You have rejected this agreement.</p>}
-                            
-                            <p style={{fontSize: '0.85rem', color: '#94a3b8', borderTop: '1px solid var(--border)', paddingTop: '15px', marginTop: '20px'}}>
-                                <strong>Cryptographic Hash:</strong> {agreement.agreement_hash}
-                            </p>
-                        </div>
+                <div className="page-container" style={{display: 'flex', justifyContent: 'center'}}>
+                    <div className="card" style={{width: '100%', maxWidth: '400px'}}>
+                        <h3 style={{textAlign: 'center', marginBottom: '20px'}}>{isLogin ? 'Welcome Back' : 'Join Shannon'}</h3>
+                        {isSigning && <p style={{textAlign: 'center', color: 'var(--warning)', marginBottom: '16px', fontSize: '0.9rem'}}>Log in to view and sign this agreement.</p>}
+                        <form onSubmit={handleAuth}>
+                            <input type="email" placeholder="Email Address" value={email} onChange={e => setEmail(e.target.value)} required />
+                            <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
+                            <button type="submit" disabled={loading} style={{marginTop: '16px'}}>{loading ? 'Processing...' : (isLogin ? 'Log In' : 'Sign Up')}</button>
+                        </form>
+                        <p style={{textAlign: 'center', marginTop: '20px', cursor: 'pointer', color: 'var(--primary)', fontSize: '0.9rem'}} onClick={() => setIsLogin(!isLogin)}>{isLogin ? "Don't have an account? Sign up" : "Already have an account? Log in"}</p>
                     </div>
                 </div>
             );
@@ -223,12 +296,7 @@
             };
 
             const fetchAgreements = async () => {
-                // SECURITY FIX: Only fetch agreements where the user is the creator (Party A)
-                const { data } = await supabase
-                    .from('agreements')
-                    .select('*')
-                    .eq('created_by', session.user.id) 
-                    .order('created_at', { ascending: false });
+                const { data } = await supabase.from('agreements').select('*').eq('created_by', session.user.id).order('created_at', { ascending: false });
                 if (data) setAgreements(data);
             };
 
@@ -269,15 +337,15 @@
 
             return (
                 <div className="page-container">
-                    <h2>Welcome, {session.user.email}</h2>
+                    <h2 style={{marginBottom: '24px'}}>Dashboard</h2>
                     
                     <div className="card">
                         <h3>Subscription Status</h3>
                         {isActive ? (
-                            <p style={{color: 'var(--success)', fontWeight: 'bold', fontSize: '1.2rem'}}>✅ Active - Your trust layer is online.</p>
+                            <p style={{color: 'var(--success)', fontWeight: '600'}}>✅ Active - Your trust layer is online.</p>
                         ) : (
                             <div>
-                                <p style={{color: '#ef4444', fontWeight: 'bold', fontSize: '1.2rem'}}>🔒 Inactive - Payment Required.</p>
+                                <p style={{color: 'var(--danger)', fontWeight: '600'}}>🔒 Inactive - Payment Required.</p>
                                 <p>Send <strong>$19.99/Month</strong> to:</p>
                                 <div className="wallet-box">{TRUST_WALLET}</div>
                             </div>
@@ -288,17 +356,17 @@
                         <h3>Create New Agreement</h3>
                         <form onSubmit={createAgreement}>
                             <input type="email" placeholder="Party B Email (The other person)" value={partyBEmail} onChange={e => setPartyBEmail(e.target.value)} required disabled={!isActive} />
-                            <textarea placeholder="What is the agreement? (e.g., I will deliver the design by Friday)" rows="3" value={text} onChange={e => setText(e.target.value)} required disabled={!isActive} />
-                            <button type="submit" disabled={!isActive || submitting} style={{width: '100%', marginTop: '15px'}}>
+                            <textarea placeholder="What is the agreement?" rows="3" value={text} onChange={e => setText(e.target.value)} required disabled={!isActive} />
+                            <button type="submit" disabled={!isActive || submitting} style={{marginTop: '12px'}}>
                                 {submitting ? 'Creating...' : (isActive ? 'Create Agreement' : 'Locked')}
                             </button>
                         </form>
                     </div>
 
                     <div className="card">
-                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
                             <h3 style={{margin: 0}}>Your Agreements</h3>
-                            <button onClick={fetchAgreements} style={{padding: '8px 16px', fontSize: '0.8rem'}}>🔄 Refresh</button>
+                            <button onClick={fetchAgreements} style={{padding: '6px 12px', fontSize: '0.8rem', width: 'auto'}}>🔄 Refresh</button>
                         </div>
                         
                         {agreements.map(a => (
@@ -306,23 +374,23 @@
                                 <div className="watermark">SHANNON</div>
                                 <div className="cert-content">
                                     <span className={`seal ${a.status === 'sealed' ? 'sealed' : a.status === 'denied' ? 'denied' : 'pending'}`}>
-                                        {a.status === 'sealed' ? '🛡️ Shannon Certified' : a.status === 'denied' ? '❌ Denied by Party B' : '⏳ Pending Signature'}
+                                        {a.status === 'sealed' ? '🛡️ Certified' : a.status === 'denied' ? '❌ Denied' : '⏳ Pending'}
                                     </span>
                                     <p><strong>To:</strong> {a.party_b_wallet}</p>
-                                    <p><strong>Agreement:</strong> {a.agreement_text}</p>
+                                    <p style={{color: 'var(--text)'}}>{a.agreement_text}</p>
                                     
                                     {a.status === 'pending' && (
-                                        <div style={{background: 'var(--dark)', padding: '15px', borderRadius: '8px', marginTop: '15px', border: '1px solid var(--warning)'}}>
-                                            <p style={{margin: '0 0 10px 0', fontSize: '0.9rem', color: 'var(--muted)'}}>Send this secure link to Party B:</p>
-                                            <div style={{display: 'flex', gap: '10px'}}>
-                                                <button onClick={() => sendWhatsApp(a.id)} style={{flex: 1, background: '#25D366', color: 'white'}}>WhatsApp</button>
-                                                <button onClick={() => copyLink(a.id)} style={{flex: 1, background: 'var(--primary)', color: 'var(--dark)'}}>Copy Link</button>
+                                        <div style={{background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '8px', marginTop: '12px', border: '1px solid var(--border)'}}>
+                                            <p style={{margin: '0 0 8px 0', fontSize: '0.85rem'}}>Send link to Party B:</p>
+                                            <div style={{display: 'flex', gap: '8px'}}>
+                                                <button onClick={() => sendWhatsApp(a.id)} style={{flex: 1, background: '#25D366', color: 'white', padding: '10px', fontSize: '0.85rem'}}>WhatsApp</button>
+                                                <button onClick={() => copyLink(a.id)} style={{flex: 1, background: 'var(--primary)', color: 'var(--dark)', padding: '10px', fontSize: '0.85rem'}}>Copy Link</button>
                                             </div>
                                         </div>
                                     )}
 
-                                    <p style={{fontSize: '0.85rem', color: '#94a3b8', borderTop: '1px solid var(--border)', paddingTop: '15px', marginTop: '15px'}}>
-                                        <strong>Hash:</strong> {a.agreement_hash} | {new Date(a.created_at).toLocaleString()}
+                                    <p style={{fontSize: '0.75rem', color: 'var(--muted)', borderTop: '1px solid var(--border)', paddingTop: '12px', marginTop: '12px'}}>
+                                        Hash: {a.agreement_hash} | {new Date(a.created_at).toLocaleString()}
                                     </p>
                                 </div>
                             </div>
@@ -332,92 +400,68 @@
             );
         }
 
-        function AuthPage({ onLogin, isSigning, signId }) {
-            const [email, setEmail] = useState('');
-            const [password, setPassword] = useState('');
-            const [isLogin, setIsLogin] = useState(true);
-            const [loading, setLoading] = useState(false);
+        function SigningPage({ agreementId, session }) {
+            const [agreement, setAgreement] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState('');
 
-            const handleAuth = async (e) => {
-                e.preventDefault(); setLoading(true);
-                if (isLogin) {
-                    const { error, data } = await supabase.auth.signInWithPassword({ email, password });
-                    if (error) alert(error.message); 
-                    else {
-                        if (isSigning) window.location.href = `/?sign=${signId}`; 
-                        else onLogin(data.session);
-                    }
+            useEffect(() => { fetchAgreement(); }, [agreementId]);
+
+            const fetchAgreement = async () => {
+                const { data, error } = await supabase.from('agreements').select('*').eq('id', agreementId).single();
+                if (error || !data) {
+                    setError('Agreement not found.');
                 } else {
-                    const { error } = await supabase.auth.signUp({ email, password });
-                    if (error) alert(error.message); 
-                    else alert("Account created! You can now log in.");
+                    if (data.party_b_wallet.toLowerCase() !== session.user.email.toLowerCase()) {
+                        setError(`Access Denied. This agreement was sent to a different email address.`);
+                    } else {
+                        setAgreement(data);
+                    }
                 }
                 setLoading(false);
             };
 
-            return (
-                <div className="page-container" style={{display: 'flex', justifyContent: 'center'}}>
-                    <div className="card" style={{width: '100%', maxWidth: '450px'}}>
-                        <h2 style={{textAlign: 'center'}}>{isLogin ? 'Welcome Back' : 'Join Shannon'}</h2>
-                        {isSigning && <p style={{textAlign: 'center', color: 'var(--warning)', marginBottom: '15px'}}>You must log in to view and sign this agreement.</p>}
-                        <form onSubmit={handleAuth}>
-                            <input type="email" placeholder="Email Address" value={email} onChange={e => setEmail(e.target.value)} required />
-                            <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
-                            <button type="submit" disabled={loading} style={{marginTop: '20px', width: '100%'}}>{loading ? 'Processing...' : (isLogin ? 'Log In' : 'Sign Up')}</button>
-                        </form>
-                        <p style={{textAlign: 'center', marginTop: '25px', cursor: 'pointer', color: 'var(--primary)'}} onClick={() => setIsLogin(!isLogin)}>{isLogin ? "Don't have an account? Sign up" : "Already have an account? Log in"}</p>
-                    </div>
-                </div>
-            );
-        }
+            const handleSign = async (decision) => {
+                const { error } = await supabase.from('agreements')
+                    .update({ party_b_status: decision, status: decision === 'accepted' ? 'sealed' : 'denied' })
+                    .eq('id', agreement.id);
+                
+                if (error) alert("Error: " + error.message);
+                else {
+                    setAgreement({ ...agreement, party_b_status: decision, status: decision === 'accepted' ? 'sealed' : 'denied' });
+                }
+            };
 
-        function HomePage({ navigateTo }) {
+            if (loading) return <div className="page-container"><h2>Loading...</h2></div>;
+            if (error) return <div className="page-container"><h2 style={{color: 'var(--danger)'}}>{error}</h2></div>;
+
             return (
                 <div className="page-container">
-                    <h1>Stop arguing.<br/><span>Start proving.</span></h1>
-                    <p className="hook">"He said it was a partnership. She said it was a favor. Without proof, it's just a broken promise."</p>
-                    <div className="card">
-                        <h3>The Wild West of Digital Deals</h3>
-                        <p>Shannon records the absolute truth of who agreed to what, and exactly when.</p>
-                        <button onClick={() => navigateTo('auth')}>Create Record</button>
+                    <h2>Review Agreement</h2>
+                    <div className={`certificate-box ${agreement.status === 'sealed' ? 'sealed' : agreement.status === 'denied' ? 'denied' : 'pending'}`}>
+                        <div className="watermark">SHANNON</div>
+                        <div className="cert-content">
+                            <span className={`seal ${agreement.status === 'sealed' ? 'sealed' : agreement.status === 'denied' ? 'denied' : 'pending'}`}>
+                                {agreement.status === 'sealed' ? '🛡️ Sealed' : agreement.status === 'denied' ? '❌ Denied' : '⏳ Pending'}
+                            </span>
+                            <p><strong>From:</strong> {agreement.party_a_wallet}</p>
+                            <p style={{color: 'var(--text)'}}>{agreement.agreement_text}</p>
+                            
+                            {agreement.status === 'pending' && (
+                                <div style={{display: 'flex', gap: '10px', marginTop: '16px'}}>
+                                    <button onClick={() => handleSign('accepted')} className="btn-success" style={{flex: 1}}>Accept & Sign</button>
+                                    <button onClick={() => handleSign('denied')} className="btn-danger" style={{flex: 1}}>Deny</button>
+                                </div>
+                            )}
+                            
+                            {agreement.status === 'sealed' && <p style={{color: 'var(--success)', fontWeight: '600', marginTop: '16px'}}>Signed successfully. Party A has been notified.</p>}
+                            {agreement.status === 'denied' && <p style={{color: 'var(--danger)', fontWeight: '600', marginTop: '16px'}}>You have rejected this agreement.</p>}
+                            
+                            <p style={{fontSize: '0.75rem', color: 'var(--muted)', borderTop: '1px solid var(--border)', paddingTop: '12px', marginTop: '16px'}}>
+                                Hash: {agreement.agreement_hash}
+                            </p>
+                        </div>
                     </div>
-                </div>
-            );
-        }
-
-        function AboutPage({ navigateTo }) {
-            return (
-                <div className="page-container">
-                    <h2>The Anatomy of Trust.</h2>
-                    <div className="card">
-                        <h3>How It Works</h3>
-                        <p>1. Party A creates an agreement and sends a secure link.</p>
-                        <p>2. Party B logs in (to verify their identity) and clicks Accept.</p>
-                        <p>3. The agreement is cryptographically sealed. Party A cannot fake this.</p>
-                        <button onClick={() => navigateTo('pricing')}>See Pricing</button>
-                    </div>
-                </div>
-            );
-        }
-
-        function PricingPage({ navigateTo }) {
-            return (
-                <div className="page-container">
-                    <h2>Protect your business.</h2>
-                    <div className="card" style={{borderColor: 'var(--primary)', textAlign: 'center'}}>
-                        <h1 style={{fontSize: '3.5rem', marginBottom: '0'}}>$19.99<span style={{fontSize: '1.2rem', color: 'var(--muted)'}}>/month</span></h1>
-                        <div className="wallet-box">{TRUST_WALLET}</div>
-                        <button onClick={() => navigateTo('auth')}>I Have Paid - Sign In</button>
-                    </div>
-                </div>
-            );
-        }
-
-        function ContactPage() {
-            return (
-                <div className="page-container">
-                    <h2>Contact Us</h2>
-                    <div className="card"><p style={{fontSize: '1.5rem', color: 'var(--primary)', fontWeight: 'bold'}}>vision.ktygroup@gmail.com</p></div>
                 </div>
             );
         }
@@ -435,13 +479,15 @@
             };
             return (
                 <div className="page-container">
-                    <h1 style={{color: '#ef4444'}}>Owner Panel</h1>
+                    <h2 style={{color: 'var(--danger)', marginBottom: '24px'}}>Owner Panel</h2>
                     <div className="card">
                         <h3>User Management</h3>
                         {users.map(u => (
                             <div key={u.id} className="user-row">
-                                <div><p style={{margin: '0 0 5px 0', fontWeight: 'bold'}}>{u.email}</p></div>
-                                <button onClick={() => toggleActive(u.id, u.is_active)} className={u.is_active ? "btn-success toggle-btn" : "btn-danger toggle-btn"}>
+                                <div>
+                                    <p style={{margin: 0, fontWeight: '600', fontSize: '0.95rem', color: 'var(--text)'}}>{u.email}</p>
+                                </div>
+                                <button onClick={() => toggleActive(u.id, u.is_active)} className={`toggle-btn ${u.is_active ? 'btn-success' : 'btn-danger'}`}>
                                     {u.is_active ? "ACTIVE" : "LOCKED"}
                                 </button>
                             </div>
