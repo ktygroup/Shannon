@@ -190,7 +190,7 @@
                         <p>Shannon records the absolute truth of who agreed to what, and exactly when. No more screenshots. No more broken promises.</p>
                         <div style={{display: 'flex', gap: '12px', marginTop: '20px'}}>
                             <button onClick={() => navigateTo('auth')}>Create Record</button>
-                            <button className="btn-outline" onClick={() => navigateTo('about')}>Learn More</button>
+                            <button className="btn-outline" onClick={() => navigateTo('pricing')}>See Pricing</button>
                         </div>
                     </div>
                 </div>
@@ -218,13 +218,9 @@
 
             useEffect(() => {
                 const fetchCount = async () => {
-                    const { count, error } = await supabase
-                        .from('users')
-                        .select('*', { count: 'exact', head: true })
-                        .eq('is_active', true);
-
-                    if (!error && count !== null) {
-                        setSpotsLeft(Math.max(0, 25 - count));
+                    const { data, error } = await supabase.from('public_active_count').select('active_count').single();
+                    if (!error && data) {
+                        setSpotsLeft(Math.max(0, 25 - data.active_count));
                     }
                     setLoading(false);
                 };
@@ -235,26 +231,43 @@
 
             return (
                 <div className="page-container">
-                    <h2>Protect your business.</h2>
+                    <h2>Simple, Transparent Pricing.</h2>
                     
-                    {spotsLeft > 0 ? (
-                        <div className="card" style={{borderColor: 'var(--primary)', textAlign: 'center'}}>
-                            <div style={{background: 'var(--warning)', color: '#000', padding: '12px', borderRadius: '6px', fontWeight: '800', marginBottom: '20px', fontSize: '1.1rem'}}>
-                                ⚠️ Founding Member Price: Only {spotsLeft} spots left!
-                            </div>
-                            <h1 style={{fontSize: '3rem', marginBottom: '8px'}}>$19.99<span style={{fontSize: '1rem', color: 'var(--muted)'}}>/month</span></h1>
-                            <p style={{marginBottom: '24px'}}>Send USDT (TRC-20) to activate your account:</p>
-                            <div className="wallet-box">{TRUST_WALLET}</div>
-                            <button onClick={() => navigateTo('auth')}>I Have Paid - Sign In</button>
+                    <div className="card" style={{borderColor: 'var(--primary)'}}>
+                        <div style={{textAlign: 'center', marginBottom: '24px'}}>
+                            {spotsLeft > 0 ? (
+                                <>
+                                    <div style={{background: 'var(--warning)', color: '#000', padding: '8px', borderRadius: '6px', fontWeight: '800', marginBottom: '16px', fontSize: '1rem', display: 'inline-block'}}>
+                                        ⚠️ Founding Member Offer: Only {spotsLeft} out of 25 spots left!
+                                    </div>
+                                    <h1 style={{fontSize: '3rem', marginBottom: '8px'}}>$19.99<span style={{fontSize: '1rem', color: 'var(--muted)'}}>/month</span></h1>
+                                    <p style={{fontSize: '0.95rem'}}>Lock in this price forever as one of our first 25 users.</p>
+                                </>
+                            ) : (
+                                <>
+                                    <h1 style={{fontSize: '3rem', marginBottom: '8px'}}>$49.99<span style={{fontSize: '1rem', color: 'var(--muted)'}}>/month</span></h1>
+                                    <p style={{fontSize: '0.95rem'}}>The Founding Member spots are gone. Standard pricing applies.</p>
+                                </>
+                            )}
                         </div>
-                    ) : (
-                        <div className="card" style={{borderColor: 'var(--primary)', textAlign: 'center'}}>
-                            <h1 style={{fontSize: '3rem', marginBottom: '8px'}}>$49.99<span style={{fontSize: '1rem', color: 'var(--muted)'}}>/month</span></h1>
-                            <p style={{marginBottom: '24px'}}>The Founding Member spots are gone. Standard pricing applies.</p>
-                            <div className="wallet-box">{TRUST_WALLET}</div>
-                            <button onClick={() => navigateTo('auth')}>I Have Paid - Sign In</button>
+
+                        <div style={{background: 'var(--dark)', padding: '20px', borderRadius: '8px', marginBottom: '24px'}}>
+                            <h3 style={{marginBottom: '16px'}}>What you get:</h3>
+                            <ul style={{listStyle: 'none', padding: 0, margin: 0, color: 'var(--text)'}}>
+                                <li style={{marginBottom: '8px'}}>✅ Unlimited cryptographic agreements</li>
+                                <li style={{marginBottom: '8px'}}>✅ Secure two-party login verification</li>
+                                <li style={{marginBottom: '8px'}}>✅ Permanent, immutable digital seals</li>
+                                <li>✅ WhatsApp & Link sharing</li>
+                            </ul>
                         </div>
-                    )}
+
+                        <div style={{textAlign: 'center'}}>
+                            <p style={{marginBottom: '12px', fontWeight: '600', color: 'var(--text)'}}>Send USDT (TRC-20) to activate:</p>
+                            <div className="wallet-box">{TRUST_WALLET}</div>
+                            <button onClick={() => navigateTo('auth')} style={{marginTop: '16px'}}>I Have Paid - Sign In</button>
+                            <p style={{fontSize: '0.8rem', color: 'var(--muted)', marginTop: '12px'}}>After payment, your account will be activated manually by the owner.</p>
+                        </div>
+                    </div>
                 </div>
             );
         }
@@ -330,14 +343,9 @@
                 const { data } = await supabase.from('users').select('is_active').eq('id', session.user.id).single();
                 if (data) {
                     setIsActive(data.is_active);
-                    
                     if (data.is_active) {
-                        const { count } = await supabase
-                            .from('users')
-                            .select('*', { count: 'exact', head: true })
-                            .eq('is_active', true);
-                        
-                        if (count && count <= 25) {
+                        const { data: countData } = await supabase.from('public_active_count').select('active_count').single();
+                        if (countData && countData.active_count <= 25) {
                             setIsFoundingMember(true);
                         }
                     }
