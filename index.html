@@ -98,11 +98,11 @@
 
         /* PRINT CSS */
         @media print {
-            body * { visibility: hidden; }
-            #print-section, #print-section * { visibility: visible; }
-            #print-section { position: absolute; left: 0; top: 0; width: 100%; padding: 0; margin: 0; }
-            .no-print { display: none !important; }
-            .document-paper { border: none; padding: 0; box-shadow: none; }
+            body { background: #fff; }
+            nav, footer, .no-print, .drawer, .drawer-overlay { display: none !important; }
+            .container { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
+            #print-section { display: block !important; position: static; width: 100%; }
+            .document-paper { border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
         }
 
         /* DESKTOP RESPONSIVE */
@@ -278,7 +278,7 @@
                             <h1>$99.99<span style={{fontSize: '1rem', color: 'var(--muted)'}}>/mo</span></h1>
                             <ul>
                                 <li>✓ 5 Separate Accounts</li>
-                                <li>✓ 25 Agreements / month</li>
+                                <li>✓ 25 Agreements per account</li>
                                 <li>✓ Permanent digital seals</li>
                                 <li>✓ Priority support</li>
                             </ul>
@@ -289,10 +289,10 @@
                             <p>For large corporations.</p>
                             <h1>Custom</h1>
                             <ul>
-                                <li>✓ Unlimited Accounts</li>
-                                <li>✓ Unlimited Agreements</li>
-                                <li>✓ Custom API integration</li>
-                                <li>✓ Dedicated manager</li>
+                                <li>✓ Custom Accounts</li>
+                                <li>✓ Custom Agreements</li>
+                                <li>✓ Cryptographically sealed</li>
+                                <li>✓ Everything is custom</li>
                             </ul>
                             <a href="mailto:vision.ktygroup@gmail.com?subject=Enterprise Plan Inquiry" style={{textDecoration: 'none'}}><button className="btn-outline">Contact Sales</button></a>
                         </div>
@@ -430,7 +430,18 @@
 
             const printPDF = (agreement) => {
                 setSelectedAgreement(agreement);
-                setTimeout(() => { window.print(); }, 100);
+                setTimeout(() => { window.print(); }, 500);
+            };
+
+            const sendWhatsApp = (id) => {
+                const link = `${window.location.origin}/?sign=${id}`;
+                const message = `Hi, I have sent you an agreement to sign on Shannon. Please click this secure link to review and accept: ${link}`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+            };
+
+            const copyLink = (id) => {
+                navigator.clipboard.writeText(`${window.location.origin}/?sign=${id}`);
+                alert("Link copied!");
             };
 
             return (
@@ -494,7 +505,8 @@
                                         </div>
                                         <p style={{color: 'var(--text)', fontStyle: 'italic', marginBottom: '24px'}}>"{a.agreement_text}"</p>
                                         <div style={{display: 'flex', gap: '12px', flexWrap: 'wrap'}}>
-                                            <button className="btn-outline" style={{padding: '8px 16px', fontSize: '0.9rem'}} onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/?sign=${a.id}`); alert("Link copied!"); }}>Copy Sign Link</button>
+                                            <button className="btn-outline" style={{padding: '8px 16px', fontSize: '0.9rem'}} onClick={() => copyLink(a.id)}>Copy Sign Link</button>
+                                            <button className="btn-outline" style={{padding: '8px 16px', fontSize: '0.9rem', background: '#25D366', color: 'white', border: 'none'}} onClick={() => sendWhatsApp(a.id)}>WhatsApp</button>
                                             {a.status === 'sealed' && <button className="btn-success" style={{padding: '8px 16px', fontSize: '0.9rem'}} onClick={() => printPDF(a)}>Download PDF</button>}
                                         </div>
                                     </div>
