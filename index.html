@@ -9,96 +9,120 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&display=swap');
+
+        :root { 
+            --bg: #f8fafc; 
+            --card-bg: #ffffff;
+            --text: #0f172a; 
+            --muted: #475569; 
+            --border: #e2e8f0; 
+            --primary: #0f172a; 
+            --accent: #2563eb;
+            --success: #16a34a;
+            --danger: #dc2626;
+        }
         
-        :root { --primary: #38bdf8; --dark: #0f172a; --card: #1e293b; --text: #f8fafc; --muted: #94a3b8; --border: #334155; --warning: #eab308; --success: #22c55e; --danger: #ef4444; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; }
         
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: var(--dark); color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+        /* NAVIGATION */
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.9); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.5px; cursor: pointer; }
+        .nav-links { display: flex; gap: 24px; align-items: center; }
+        .nav-links span { font-size: 0.95rem; font-weight: 500; color: var(--muted); cursor: pointer; transition: color 0.2s; }
+        .nav-links span:hover { color: var(--text); }
         
-        nav { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
-        .logo { font-size: 1.25rem; font-weight: 700; color: var(--primary); cursor: pointer; letter-spacing: 1.5px; }
-        .gear-icon { font-size: 1.5rem; cursor: pointer; user-select: none; }
-        
-        .drawer-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        /* MOBILE MENU */
+        .menu-btn { display: none; cursor: pointer; font-size: 1.5rem; }
+        .drawer-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.4); z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         .drawer-overlay.open { opacity: 1; pointer-events: auto; }
-        .drawer { position: fixed; top: 0; right: -280px; width: 280px; height: 100vh; background: var(--card); z-index: 1001; transition: right 0.3s ease; padding: 24px; display: flex; flex-direction: column; gap: 12px; border-left: 1px solid var(--border); }
+        .drawer { position: fixed; top: 0; right: -300px; width: 280px; height: 100vh; background: var(--card-bg); z-index: 1001; transition: right 0.3s; padding: 30px; display: flex; flex-direction: column; gap: 20px; border-left: 1px solid var(--border); }
         .drawer.open { right: 0; }
-        .drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
-        .drawer-header h3 { color: var(--primary); font-size: 1.1rem; }
-        .close-btn { cursor: pointer; font-size: 1.2rem; color: var(--muted); }
-        .drawer-link { padding: 10px 12px; background: rgba(255,255,255,0.03); border-radius: 6px; cursor: pointer; color: var(--text); font-weight: 500; font-size: 0.95rem; transition: background 0.2s; }
-        .drawer-link:hover { background: rgba(56, 189, 248, 0.1); color: var(--primary); }
-        
-        .page-container { max-width: 900px; margin: 0 auto; padding: 48px 20px; min-height: 80vh; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        
-        h1 { font-size: 2.5rem; font-weight: 700; line-height: 1.2; margin-bottom: 16px; letter-spacing: -0.5px; }
-        h1 span { color: var(--primary); }
-        h2 { font-size: 1.75rem; margin-bottom: 20px; font-weight: 600; color: var(--text); }
-        h3 { font-size: 1.15rem; margin-bottom: 12px; color: var(--primary); font-weight: 600; }
-        p { margin-bottom: 16px; color: var(--muted); font-size: 1rem; }
-        
-        .video-container { position: relative; width: 100%; padding-bottom: 56.25%; border-radius: 12px; overflow: hidden; margin-bottom: 32px; border: 1px solid var(--border); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
-        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
-        
-        .card { background: var(--card); border-radius: 12px; padding: 28px; margin-bottom: 24px; border: 1px solid var(--border); }
-        
-        button { background: var(--primary); color: var(--dark); border: none; padding: 14px 24px; border-radius: 6px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; width: 100%; }
-        button:hover { background: #7dd3fc; }
-        button:disabled { background: #475569; color: var(--muted); cursor: not-allowed; }
+        .drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .drawer-link { font-weight: 600; font-size: 1.1rem; cursor: pointer; }
+        .close-btn { cursor: pointer; font-size: 1.5rem; color: var(--muted); }
+
+        /* LAYOUT & TYPOGRAPHY */
+        .container { max-width: 1000px; margin: 0 auto; padding: 60px 20px; min-height: 80vh; }
+        h1 { font-size: 3rem; font-weight: 700; line-height: 1.1; letter-spacing: -1.5px; margin-bottom: 20px; }
+        h2 { font-size: 2rem; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 20px; }
+        h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 12px; }
+        p { color: var(--muted); font-size: 1.05rem; margin-bottom: 24px; }
+        .hook { font-size: 1.25rem; font-weight: 500; color: var(--text); border-left: 3px solid var(--text); padding-left: 16px; margin-bottom: 32px; font-style: italic; }
+
+        /* BUTTONS */
+        button { background: var(--primary); color: #fff; border: none; padding: 14px 24px; border-radius: 6px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: opacity 0.2s, transform 0.1s; width: 100%; display: block; text-align: center; }
+        button:hover { opacity: 0.9; }
+        button:active { transform: scale(0.98); }
+        button:disabled { background: #cbd5e1; color: #64748b; cursor: not-allowed; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+        .btn-outline:hover { background: #f1f5f9; }
         .btn-danger { background: var(--danger); color: white; }
         .btn-success { background: var(--success); color: white; }
-        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
-        .btn-outline:hover { background: rgba(56, 189, 248, 0.1); }
-        
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: 1px solid var(--border); background: var(--dark); color: white; font-size: 0.95rem; }
-        input:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.1); }
-        
-        .wallet-box { background: var(--dark); border: 1px dashed var(--primary); padding: 16px; border-radius: 8px; text-align: center; margin: 16px 0; font-family: monospace; font-size: 0.95rem; color: var(--primary); word-break: break-all; }
-        
-        .user-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding: 16px 0; }
-        .toggle-btn { padding: 8px 16px; font-size: 0.85rem; width: auto; }
-        
-        .certificate-box { position: relative; background: var(--dark); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-top: 16px; overflow: hidden; }
-        .certificate-box.sealed { border-color: var(--success); }
-        .certificate-box.pending { border-color: var(--warning); }
-        .certificate-box.denied { border-color: var(--danger); }
-        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-20deg); font-size: 5rem; font-weight: 700; color: rgba(255, 255, 255, 0.02); pointer-events: none; z-index: 0; white-space: nowrap; }
-        .cert-content { position: relative; z-index: 1; }
-        .seal { display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .seal.pending { background: var(--warning); color: #000; }
-        .seal.sealed { background: var(--success); color: white; }
-        .seal.denied { background: var(--danger); color: white; }
-        
-        .founding-badge { background: var(--warning); color: #000; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
-        
-        /* PDF PRINT STYLES */
-        .pdf-only { display: none; }
-        
+
+        /* FORMS */
+        input, textarea { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 1rem; margin-bottom: 16px; outline: none; transition: border-color 0.2s; background: var(--bg); }
+        input:focus, textarea:focus { border-color: var(--text); background: var(--card-bg); }
+        label { font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; display: block; color: var(--text); }
+
+        /* CARDS & BOXES */
+        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 32px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .wallet-box { font-family: monospace; background: var(--bg); padding: 16px; border-radius: 6px; text-align: center; margin: 16px 0; border: 1px solid var(--border); word-break: break-all; font-size: 0.95rem; color: var(--accent); font-weight: 600; }
+
+        /* VIDEO */
+        .video-container { width: 100%; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; margin-bottom: 40px; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .video-container iframe { width: 100%; height: 100%; border: none; }
+
+        /* --- PAPER DOCUMENT --- */
+        .document-paper { background-color: #fff; border: 1px solid #d1d5db; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); padding: 40px 30px; border-radius: 4px; margin-bottom: 32px; font-family: 'Merriweather', 'Georgia', serif; color: #1a1a1a; }
+        .document-paper h1 { font-size: 1.5rem; text-align: center; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 15px; font-family: 'Inter', sans-serif; }
+        .document-paper .field { margin-bottom: 20px; font-size: 0.95rem; line-height: 1.6; }
+        .document-paper .field strong { font-family: 'Inter', sans-serif; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px; color: #555; display: block; margin-bottom: 4px; }
+        .document-paper .field .underline { border-bottom: 1px solid #000; padding-bottom: 4px; display: block; min-height: 24px; }
+        .document-paper .agreement-text { font-style: italic; padding: 16px; border-left: 3px solid #ccc; background: #fafafa; margin-top: 8px; font-size: 1rem; }
+        .document-paper .signatures { display: flex; flex-direction: column; gap: 30px; margin-top: 40px; }
+        .document-paper .signature-box { width: 100%; border-top: 1px solid #000; padding-top: 8px; font-family: 'Inter', sans-serif; font-size: 0.75rem; text-transform: uppercase; }
+
+        /* PRICING GRID */
+        .plans { display: grid; grid-template-columns: 1fr; gap: 24px; margin: 40px 0; }
+        .plan-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 32px; display: flex; flex-direction: column; }
+        .plan-card.popular { border-color: var(--text); box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: relative; }
+        .plan-card h1 { font-size: 2.5rem; margin: 16px 0; }
+        .plan-card ul { list-style: none; padding: 0; margin: 24px 0; flex-grow: 1; }
+        .plan-card li { margin-bottom: 12px; font-size: 0.95rem; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+
+        /* FOOTER */
+        footer { border-top: 1px solid var(--border); padding: 40px 20px; text-align: center; margin-top: 60px; }
+        footer p { margin: 0; font-size: 0.9rem; }
+
+        /* PRINT CSS */
         @media print {
             body * { visibility: hidden; }
             #print-section, #print-section * { visibility: visible; }
-            #print-section { position: absolute; left: 0; top: 0; width: 100%; background: white; color: black; padding: 40px; font-family: 'Times New Roman', serif; }
-            .pdf-only { display: block; }
+            #print-section { position: absolute; left: 0; top: 0; width: 100%; padding: 0; margin: 0; }
             .no-print { display: none !important; }
-            
-            .pdf-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 40px; }
-            .pdf-header h1 { font-size: 24px; color: black; margin: 0; letter-spacing: 2px; }
-            .pdf-header p { color: #555; margin: 5px 0 0 0; font-size: 12px; }
-            .pdf-title { text-align: center; font-size: 20px; text-decoration: underline; margin-bottom: 30px; text-transform: uppercase; }
-            .pdf-content { font-size: 14px; line-height: 1.8; margin-bottom: 40px; text-align: justify; }
-            .pdf-details { width: 100%; border-collapse: collapse; margin-bottom: 40px; font-size: 12px; }
-            .pdf-details td { border: 1px solid #ccc; padding: 10px; }
-            .pdf-details strong { width: 150px; display: inline-block; }
-            .pdf-footer { margin-top: 60px; display: flex; justify-content: space-between; }
-            .signature-box { width: 45%; border-top: 1px solid #000; padding-top: 5px; text-align: center; font-size: 12px; }
+            .document-paper { border: none; padding: 0; box-shadow: none; }
         }
-        
-        @media (max-width: 768px) {
-            h1 { font-size: 2rem; }
-            .page-container { padding: 32px 16px; }
-            .card { padding: 20px; }
+
+        /* DESKTOP RESPONSIVE */
+        @media (min-width: 768px) {
+            nav { padding: 20px 40px; }
+            .container { padding: 80px 24px; }
+            h1 { font-size: 3.5rem; }
+            .plans { grid-template-columns: repeat(3, 1fr); }
+            .document-paper { padding: 60px 50px; }
+            .document-paper h1 { font-size: 2rem; }
+            .document-paper .signatures { flex-direction: row; justify-content: space-between; }
+            .document-paper .signature-box { width: 45%; }
+            button { width: auto; display: inline-block; }
+            .menu-btn { display: none; }
+            .drawer, .drawer-overlay { display: none !important; }
+        }
+
+        @media (max-width: 767px) {
+            .nav-links { display: none; }
+            .menu-btn { display: block; }
         }
     </style>
 </head>
@@ -145,9 +169,7 @@
                 }
                 switch(currentPage) {
                     case 'home': return <HomePage navigateTo={navigateTo} />;
-                    case 'about': return <AboutPage navigateTo={navigateTo} />;
                     case 'pricing': return <PricingPage navigateTo={navigateTo} />;
-                    case 'contact': return <ContactPage />;
                     case 'auth': return <AuthPage onLogin={setSession} />;
                     default: return <HomePage navigateTo={navigateTo} />;
                 }
@@ -156,35 +178,58 @@
             return (
                 <div>
                     <nav className="no-print">
-                        <div className="logo" onClick={() => navigateTo(session ? 'dashboard' : 'home')}>SHANNON</div>
-                        <div className="gear-icon" onClick={() => setMenuOpen(true)}>⚙️</div>
+                        <div className="logo" onClick={() => navigateTo(session ? 'dashboard' : 'home')}>Shannon</div>
+                        <div className="nav-links">
+                            {!session ? (
+                                <>
+                                    <span onClick={() => navigateTo('home')}>Product</span>
+                                    <span onClick={() => navigateTo('pricing')}>Pricing</span>
+                                    <span onClick={() => navigateTo('auth')}>Sign In</span>
+                                </>
+                            ) : (
+                                <span onClick={handleLogout}>Log Out</span>
+                            )}
+                        </div>
+                        <div className="menu-btn" onClick={() => setMenuOpen(true)}>☰</div>
                     </nav>
+                    
                     <div className={`drawer-overlay no-print ${menuOpen ? 'open' : ''}`} onClick={() => setMenuOpen(false)}></div>
                     <div className={`drawer no-print ${menuOpen ? 'open' : ''}`}>
-                        <div className="drawer-header"><h3>Menu</h3><div className="close-btn" onClick={() => setMenuOpen(false)}>✕</div></div>
+                        <div className="drawer-header">
+                            <div className="logo">Menu</div>
+                            <div className="close-btn" onClick={() => setMenuOpen(false)}>✕</div>
+                        </div>
                         {!session ? (
                             <>
-                                <div className="drawer-link" onClick={() => navigateTo('home')}>Home</div>
-                                <div className="drawer-link" onClick={() => navigateTo('about')}>About</div>
+                                <div className="drawer-link" onClick={() => navigateTo('home')}>Product</div>
                                 <div className="drawer-link" onClick={() => navigateTo('pricing')}>Pricing</div>
-                                <div className="drawer-link" onClick={() => navigateTo('contact')}>Contact</div>
-                                <div className="drawer-link" style={{background: 'var(--primary)', color: 'var(--dark)', marginTop: 'auto', textAlign: 'center'}} onClick={() => navigateTo('auth')}>Sign In / Sign Up</div>
+                                <div className="drawer-link" onClick={() => navigateTo('auth')}>Sign In</div>
                             </>
                         ) : (
-                            <>
-                                <div className="drawer-link" onClick={() => navigateTo('dashboard')}>My Dashboard</div>
-                                <div className="drawer-link" style={{background: '#ef4444', color: 'white', marginTop: 'auto', textAlign: 'center'}} onClick={handleLogout}>Log Out</div>
-                            </>
+                            <div className="drawer-link" onClick={handleLogout}>Log Out</div>
                         )}
                     </div>
                     {renderPage()}
+                    <footer className="no-print">
+                        <p>© 2026 Shannon. A KTY Group Company.</p>
+                        <p>Contact: <a href="mailto:vision.ktygroup@gmail.com" style={{color: 'var(--text)', fontWeight: '600', textDecoration: 'none'}}>vision.ktygroup@gmail.com</a></p>
+                    </footer>
                 </div>
             );
         }
 
         function HomePage({ navigateTo }) {
             return (
-                <div className="page-container">
+                <div className="container">
+                    <h1>Stop arguing.<br/>Start proving.</h1>
+                    <p className="hook">"He said it was a partnership. She said it was a favor. Without proof, it's just a broken promise."</p>
+                    <p>Shannon provides cryptographic proof of who agreed to what, and exactly when. Protect your revenue from bad clients and fake signatures.</p>
+                    
+                    <div style={{display: 'flex', gap: '16px', marginBottom: '48px', flexWrap: 'wrap'}}>
+                        <button onClick={() => navigateTo('auth')}>Create Free Account</button>
+                        <button className="btn-outline" onClick={() => navigateTo('pricing')}>View Plans</button>
+                    </div>
+                    
                     <div className="video-container">
                         <iframe 
                             src="https://www.youtube.com/embed/TIJqeIPzWCU?autoplay=0&controls=1" 
@@ -194,151 +239,86 @@
                         </iframe>
                     </div>
 
-                    <h1>Stop arguing.<br/><span>Start proving.</span></h1>
-                    <p className="hook" style={{borderLeft: '3px solid var(--primary)', paddingLeft: '16px', marginBottom: '32px', fontStyle: 'italic'}}>"He said it was a partnership. She said it was a favor. Without proof, it's just a broken promise."</p>
-                    
-                    <div className="card">
-                        <h3>The Wild West of Digital Deals</h3>
-                        <p>Shannon records the absolute truth of who agreed to what, and exactly when. No more screenshots. No more broken promises.</p>
-                        <div style={{display: 'flex', gap: '12px', marginTop: '20px'}}>
-                            <button onClick={() => navigateTo('auth')}>Create Record</button>
-                            <button className="btn-outline" onClick={() => navigateTo('pricing')}>See Pricing</button>
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-
-        function AboutPage({ navigateTo }) {
-            return (
-                <div className="page-container">
-                    <h2>The Anatomy of Trust.</h2>
-                    <div className="card">
-                        <h3>How It Works</h3>
-                        <p>1. Party A creates an agreement and sends a secure link.</p>
-                        <p>2. Party B logs in (to verify their identity) and clicks Accept.</p>
-                        <p>3. The agreement is cryptographically sealed. Party A cannot fake this.</p>
-                        <button onClick={() => navigateTo('pricing')} style={{marginTop: '20px'}}>See Pricing</button>
+                    <div className="card" style={{marginTop: '40px'}}>
+                        <h3>Why Shannon?</h3>
+                        <p>In the Web3 and freelance economy, trust is everything. Shannon forces both parties to verify their identity before sealing an agreement. Once it's sealed, it cannot be altered, denied, or erased.</p>
+                        <ul style={{listStyle: 'none', padding: 0, color: 'var(--text)'}}>
+                            <li style={{marginBottom: '12px'}}>✅ <strong>Two-Party Verification:</strong> Both sides must log in.</li>
+                            <li style={{marginBottom: '12px'}}>✅ <strong>Cryptographic Seals:</strong> Unique, unchangeable proof.</li>
+                            <li style={{marginBottom: '12px'}}>✅ <strong>Professional PDFs:</strong> Download clean records for your files.</li>
+                        </ul>
                     </div>
                 </div>
             );
         }
 
         function PricingPage({ navigateTo }) {
-            const [spotsLeft, setSpotsLeft] = useState(25);
-            const [loading, setLoading] = useState(true);
-
-            useEffect(() => {
-                const fetchCount = async () => {
-                    const { data, error } = await supabase.from('public_active_count').select('active_count').single();
-                    if (!error && data) {
-                        setSpotsLeft(Math.max(0, 25 - data.active_count));
-                    }
-                    setLoading(false);
-                };
-                fetchCount();
-            }, []);
-
-            if (loading) return <div className="page-container"><h2>Loading...</h2></div>;
-
             return (
-                <div className="page-container">
-                    <h2 style={{textAlign: 'center', marginBottom: '40px'}}>Plans for Individuals, Agencies, and Enterprises.</h2>
+                <div className="container">
+                    <h1 style={{textAlign: 'center', marginBottom: '12px'}}>Protect your business.</h1>
+                    <p style={{textAlign: 'center', marginBottom: '48px'}}>Simple, transparent pricing for individuals, agencies, and enterprises.</p>
                     
-                    {spotsLeft > 0 && (
-                        <div style={{textAlign: 'center', marginBottom: '30px'}}>
-                            <div style={{background: 'var(--warning)', color: '#000', padding: '10px', borderRadius: '6px', fontWeight: '800', display: 'inline-block', fontSize: '1rem'}}>
-                                ⚠️ Founding Member Offer: Only {spotsLeft} out of 25 spots left for Individuals!
-                            </div>
-                        </div>
-                    )}
-
-                    <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '40px'}}>
-                        
-                        {/* INDIVIDUAL PLAN */}
-                        <div className="card" style={{borderColor: spotsLeft > 0 ? 'var(--warning)' : 'var(--border)', display: 'flex', flexDirection: 'column'}}>
-                            <h3 style={{color: 'white', marginBottom: '8px'}}>Individual</h3>
-                            <p style={{fontSize: '0.9rem', marginBottom: '20px'}}>For solo freelancers and independent contractors.</p>
-                            <h1 style={{fontSize: '2.5rem', marginBottom: '20px'}}>${spotsLeft > 0 ? '19.99' : '49.99'}<span style={{fontSize: '1rem', color: 'var(--muted)'}}>/mo</span></h1>
-                            
-                            <ul style={{listStyle: 'none', padding: 0, margin: '0 0 24px 0', color: 'var(--text)', fontSize: '0.95rem', flexGrow: 1}}>
-                                <li style={{marginBottom: '10px'}}>✅ 1 Account</li>
-                                <li style={{marginBottom: '10px'}}>✅ 15 Cryptographic agreements</li>
-                                <li style={{marginBottom: '10px'}}>✅ Printable PDF records</li>
+                    <div className="plans">
+                        <div className="plan-card">
+                            <h3>Individual</h3>
+                            <p>For solo freelancers.</p>
+                            <h1>$19.99<span style={{fontSize: '1rem', color: 'var(--muted)'}}>/mo</span></h1>
+                            <ul>
+                                <li>✓ 1 Account</li>
+                                <li>✓ 15 Agreements / month</li>
+                                <li>✓ Permanent digital seals</li>
+                                <li>✓ PDF Export</li>
                             </ul>
-                            
-                            <button onClick={() => navigateTo('auth')} style={{background: 'var(--primary)', color: 'var(--dark)'}}>Start Now</button>
+                            <button onClick={() => navigateTo('auth')}>Get Started</button>
                         </div>
-
-                        {/* AGENCY PLAN */}
-                        <div className="card" style={{borderColor: 'var(--primary)', display: 'flex', flexDirection: 'column', transform: 'scale(1.02)', boxShadow: '0 10px 30px rgba(56, 189, 248, 0.15)'}}>
-                            <div style={{background: 'var(--primary)', color: 'var(--dark)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', alignSelf: 'flex-start', marginBottom: '12px'}}>MOST POPULAR</div>
-                            <h3 style={{color: 'white', marginBottom: '8px'}}>Agency</h3>
-                            <p style={{fontSize: '0.9rem', marginBottom: '20px'}}>For small teams, Web3 studios, and agencies.</p>
-                            <h1 style={{fontSize: '2.5rem', marginBottom: '20px'}}>$99.99<span style={{fontSize: '1rem', color: 'var(--muted)'}}>/mo</span></h1>
-                            
-                            <ul style={{listStyle: 'none', padding: 0, margin: '0 0 24px 0', color: 'var(--text)', fontSize: '0.95rem', flexGrow: 1}}>
-                                <li style={{marginBottom: '10px'}}>✅ 5 Separate Accounts</li>
-                                <li style={{marginBottom: '10px'}}>✅ 25 Cryptographic agreements</li>
-                                <li style={{marginBottom: '10px'}}>✅ Printable PDF records</li>
-                                <li style={{marginBottom: '10px'}}>✅ Priority support</li>
+                        <div className="plan-card popular">
+                            <div style={{position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: 'var(--text)', color: '#fff', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold'}}>MOST POPULAR</div>
+                            <h3>Agency</h3>
+                            <p>For small teams and studios.</p>
+                            <h1>$99.99<span style={{fontSize: '1rem', color: 'var(--muted)'}}>/mo</span></h1>
+                            <ul>
+                                <li>✓ 5 Separate Accounts</li>
+                                <li>✓ 25 Agreements / month</li>
+                                <li>✓ Permanent digital seals</li>
+                                <li>✓ Priority support</li>
                             </ul>
-                            
-                            <button onClick={() => navigateTo('auth')} style={{background: 'var(--primary)', color: 'var(--dark)'}}>Start Now</button>
+                            <button onClick={() => navigateTo('auth')}>Get Started</button>
                         </div>
-
-                        {/* ENTERPRISE PLAN */}
-                        <div className="card" style={{display: 'flex', flexDirection: 'column'}}>
-                            <h3 style={{color: 'white', marginBottom: '8px'}}>Enterprise</h3>
-                            <p style={{fontSize: '0.9rem', marginBottom: '20px'}}>For large corporations and institutional partners.</p>
-                            <h1 style={{fontSize: '2.5rem', marginBottom: '20px'}}>Custom</h1>
-                            
-                            <ul style={{listStyle: 'none', padding: 0, margin: '0 0 24px 0', color: 'var(--text)', fontSize: '0.95rem', flexGrow: 1}}>
-                                <li style={{marginBottom: '10px'}}>✅ Custom Accounts</li>
-                                <li style={{marginBottom: '10px'}}>✅ Custom Agreements</li>
-                                <li style={{marginBottom: '10px'}}>✅ Custom API integration</li>
-                                <li style={{marginBottom: '10px'}}>✅ Dedicated account manager</li>
+                        <div className="plan-card">
+                            <h3>Enterprise</h3>
+                            <p>For large corporations.</p>
+                            <h1>Custom</h1>
+                            <ul>
+                                <li>✓ Unlimited Accounts</li>
+                                <li>✓ Unlimited Agreements</li>
+                                <li>✓ Custom API integration</li>
+                                <li>✓ Dedicated manager</li>
                             </ul>
-                            
-                            <a href="mailto:vision.ktygroup@gmail.com" style={{textDecoration: 'none', marginTop: 'auto'}}>
-                                <button style={{background: 'transparent', border: '1px solid var(--primary)', color: 'var(--primary)'}}>Contact Us</button>
-                            </a>
+                            <a href="mailto:vision.ktygroup@gmail.com?subject=Enterprise Plan Inquiry" style={{textDecoration: 'none'}}><button className="btn-outline">Contact Sales</button></a>
                         </div>
-
                     </div>
 
-                    <div className="card" style={{background: 'rgba(56, 189, 248, 0.05)', borderColor: 'var(--primary)'}}>
-                        <h3 style={{textAlign: 'center'}}>How to Activate Your Account</h3>
-                        <div style={{maxWidth: '600px', margin: '0 auto'}}>
-                            <p style={{fontWeight: '600', color: 'var(--text)', marginBottom: '8px'}}>1. Send Payment:</p>
-                            <p style={{marginBottom: '12px'}}>Send the exact amount (USDT TRC-20) to our official Trust Wallet:</p>
+                    <div className="card" style={{marginTop: '40px', background: 'var(--bg)', borderColor: 'var(--text)'}}>
+                        <h3 style={{textAlign: 'center'}}>How to Activate Your Plan</h3>
+                        <div style={{maxWidth: '600px', margin: '0 auto', marginTop: '24px'}}>
+                            <p style={{fontWeight: '600', color: 'var(--text)', marginBottom: '8px'}}>1. Send Payment</p>
+                            <p style={{fontSize: '0.95rem'}}>Send the exact amount (USDT TRC-20) to our official Trust Wallet:</p>
                             <div className="wallet-box">{TRUST_WALLET}</div>
                             
-                            <p style={{fontWeight: '600', color: 'var(--text)', marginBottom: '8px', marginTop: '20px'}}>2. Email Us:</p>
-                            <p style={{marginBottom: '12px'}}>After paying, create your account on Shannon, then email us at <strong>vision.ktygroup@gmail.com</strong> with:</p>
-                            <ul style={{paddingLeft: '20px', color: 'var(--muted)', marginBottom: '12px'}}>
-                                <li>The wallet address you paid from.</li>
-                                <li>The email address(es) you used to create your Shannon account(s).</li>
-                            </ul>
-                            <p style={{fontWeight: '600', color: 'var(--text)', marginBottom: '8px'}}>3. Get Activated:</p>
-                            <p>We will manually verify the blockchain, assign your plan, and activate your account within 24 hours.</p>
+                            <p style={{fontWeight: '600', color: 'var(--text)', marginBottom: '8px', marginTop: '24px'}}>2. Create Your Account</p>
+                            <p style={{fontSize: '0.95rem'}}>Sign up on Shannon using your email address.</p>
+
+                            <p style={{fontWeight: '600', color: 'var(--text)', marginBottom: '8px', marginTop: '24px'}}>3. Email Us</p>
+                            <p style={{fontSize: '0.95rem'}}>Email <strong>vision.ktygroup@gmail.com</strong> with your Transaction Hash (TXID) and the email you used to sign up.</p>
                             
-                            <div style={{marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border)'}}>
-                                <p style={{fontWeight: '600', color: 'var(--primary)'}}>Enterprise Inquiries:</p>
-                                <p>For custom plans, do not pay. Contact us directly at <strong>vision.ktygroup@gmail.com</strong> to discuss your requirements.</p>
+                            <p style={{fontWeight: '600', color: 'var(--text)', marginBottom: '8px', marginTop: '24px'}}>4. Get Activated</p>
+                            <p style={{fontSize: '0.95rem'}}>We will manually verify the payment and activate your account within 24 hours.</p>
+                            
+                            <div style={{marginTop: '24px', paddingTop: '24px', borderTop: '1px solid var(--border)'}}>
+                                <p style={{fontWeight: '600', color: 'var(--accent)'}}>Enterprise Inquiries:</p>
+                                <p style={{fontSize: '0.95rem'}}>Do not pay. Contact us directly at <strong>vision.ktygroup@gmail.com</strong> to discuss your specific requirements, and we will finalize a custom plan together.</p>
                             </div>
                         </div>
-                    </div>
-                </div>
-            );
-        }
-
-        function ContactPage() {
-            return (
-                <div className="page-container">
-                    <h2>Contact Us</h2>
-                    <div className="card">
-                        <p style={{fontSize: '1.1rem', color: 'var(--primary)', fontWeight: '500'}}>vision.ktygroup@gmail.com</p>
                     </div>
                 </div>
             );
@@ -368,16 +348,18 @@
             };
 
             return (
-                <div className="page-container" style={{display: 'flex', justifyContent: 'center'}}>
-                    <div className="card" style={{width: '100%', maxWidth: '400px'}}>
-                        <h3 style={{textAlign: 'center', marginBottom: '20px'}}>{isLogin ? 'Welcome Back' : 'Join Shannon'}</h3>
-                        {isSigning && <p style={{textAlign: 'center', color: 'var(--warning)', marginBottom: '16px', fontSize: '0.9rem'}}>Log in to view and sign this agreement.</p>}
+                <div className="container" style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+                    <div className="card" style={{width: '100%', maxWidth: '400px', marginTop: '40px'}}>
+                        <h2 style={{textAlign: 'center', marginBottom: '24px'}}>{isLogin ? 'Welcome back' : 'Create an account'}</h2>
+                        {isSigning && <p style={{textAlign: 'center', color: 'var(--accent)', marginBottom: '16px', fontSize: '0.9rem', fontWeight: '600'}}>Log in to review and sign this agreement.</p>}
                         <form onSubmit={handleAuth}>
-                            <input type="email" placeholder="Email Address" value={email} onChange={e => setEmail(e.target.value)} required />
+                            <input type="email" placeholder="Email address" value={email} onChange={e => setEmail(e.target.value)} required />
                             <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
-                            <button type="submit" disabled={loading} style={{marginTop: '16px'}}>{loading ? 'Processing...' : (isLogin ? 'Log In' : 'Sign Up')}</button>
+                            <button type="submit" disabled={loading} style={{width: '100%', marginTop: '8px'}}>{loading ? 'Processing...' : (isLogin ? 'Log In' : 'Sign Up')}</button>
                         </form>
-                        <p style={{textAlign: 'center', marginTop: '20px', cursor: 'pointer', color: 'var(--primary)', fontSize: '0.9rem'}} onClick={() => setIsLogin(!isLogin)}>{isLogin ? "Don't have an account? Sign up" : "Already have an account? Log in"}</p>
+                        <p style={{textAlign: 'center', marginTop: '24px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600', color: 'var(--accent)'}} onClick={() => setIsLogin(!isLogin)}>
+                            {isLogin ? "Don't have an account? Sign up" : "Already have an account? Log in"}
+                        </p>
                     </div>
                 </div>
             );
@@ -387,21 +369,18 @@
             const [isActive, setIsActive] = useState(false);
             const [agreements, setAgreements] = useState([]);
             const [partyBEmail, setPartyBEmail] = useState('');
+            const [partyBDetails, setPartyBDetails] = useState('');
+            const [partyADetails, setPartyADetails] = useState('');
             const [text, setText] = useState('');
             const [submitting, setSubmitting] = useState(false);
-            const [isFoundingMember, setIsFoundingMember] = useState(false);
             const [userPlan, setUserPlan] = useState('individual');
             const [agreementCount, setAgreementCount] = useState(0);
             const [limitReached, setLimitReached] = useState(false);
+            const [currentView, setCurrentView] = useState('list');
+            const [selectedAgreement, setSelectedAgreement] = useState(null);
 
-            useEffect(() => {
-                fetchUserStatus(); fetchAgreements();
-            }, []);
-
-            useEffect(() => {
-                const interval = setInterval(() => { fetchAgreements(); }, 5000);
-                return () => clearInterval(interval);
-            }, []);
+            useEffect(() => { fetchUserStatus(); fetchAgreements(); }, []);
+            useEffect(() => { const interval = setInterval(() => { fetchAgreements(); }, 5000); return () => clearInterval(interval); }, []);
 
             const fetchUserStatus = async () => {
                 const { data } = await supabase.from('users').select('is_active, plan_type, agreements_count').eq('id', session.user.id).single();
@@ -409,15 +388,9 @@
                     setIsActive(data.is_active);
                     setUserPlan(data.plan_type || 'individual');
                     setAgreementCount(data.agreements_count || 0);
-                    
                     if (data.plan_type === 'individual' && data.agreements_count >= 15) setLimitReached(true);
                     else if (data.plan_type === 'agency' && data.agreements_count >= 25) setLimitReached(true);
                     else setLimitReached(false);
-
-                    if (data.is_active) {
-                        const { data: countData } = await supabase.from('public_active_count').select('active_count').single();
-                        if (countData && countData.active_count <= 25) setIsFoundingMember(true);
-                    }
                 }
             };
 
@@ -429,9 +402,9 @@
             const createAgreement = async (e) => {
                 e.preventDefault();
                 if (!isActive) return alert("Your account is not active.");
-                if (limitReached) return alert("You have reached your agreement limit. Please upgrade your plan.");
-                
+                if (limitReached) return alert("You have reached your agreement limit.");
                 setSubmitting(true);
+                
                 const hash = btoa(text + Date.now()).substring(0, 16);
                 const newId = crypto.randomUUID();
 
@@ -446,158 +419,127 @@
                     party_b_status: 'pending'
                 });
 
-                if (error) {
-                    alert(error.message);
-                } else {
+                if (error) alert(error.message);
+                else {
                     await supabase.from('users').update({ agreements_count: agreementCount + 1 }).eq('id', session.user.id);
-                    setText(''); setPartyBEmail(''); 
-                    fetchUserStatus(); 
-                    fetchAgreements();
+                    setText(''); setPartyBEmail(''); setPartyBDetails(''); setPartyADetails('');
+                    fetchUserStatus(); fetchAgreements(); setCurrentView('list');
                 }
                 setSubmitting(false);
             };
 
-            const sendWhatsApp = (id) => {
-                const link = `${window.location.origin}/?sign=${id}`;
-                const message = `Hi, I have sent you an agreement to sign on Shannon. Please click this secure link to review and accept: ${link}`;
-                window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
-            };
-
-            const copyLink = (id) => {
-                navigator.clipboard.writeText(`${window.location.origin}/?sign=${id}`);
-                alert("Link copied!");
-            };
-
-            const printPDF = () => {
-                window.print();
+            const printPDF = (agreement) => {
+                setSelectedAgreement(agreement);
+                setTimeout(() => { window.print(); }, 100);
             };
 
             return (
-                <div className="page-container">
-                    <div id="print-section" className="pdf-only">
-                        {/* THIS IS WHAT PRINTS AS PDF */}
-                        <div className="pdf-header">
-                            <h1>SHANNON</h1>
-                            <p>The Trust Layer for Digital Agreements</p>
-                        </div>
-                        <h2 className="pdf-title">Cryptographic Agreement Record</h2>
-                        
-                        {agreements.map(a => (
-                            <div key={a.id} style={{marginBottom: '40px', pageBreakInside: 'avoid'}}>
-                                <table className="pdf-details">
-                                    <tbody>
-                                        <tr>
-                                            <td><strong>Agreement ID:</strong> {a.id}</td>
-                                            <td><strong>Date:</strong> {new Date(a.created_at).toLocaleString()}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Party A:</strong> {a.party_a_wallet}</td>
-                                            <td><strong>Party B:</strong> {a.party_b_wallet}</td>
-                                        </tr>
-                                        <tr>
-                                            <td colSpan="2"><strong>Status:</strong> {a.status.toUpperCase()}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                                
-                                <div className="pdf-content">
-                                    <strong>Terms of Agreement:</strong><br/><br/>
-                                    "{a.agreement_text}"
+                <div className="container">
+                    <div className="no-print">
+                        <div style={{display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '32px'}}>
+                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px'}}>
+                                <div>
+                                    <h2 style={{margin: 0}}>Dashboard</h2>
+                                    <p style={{margin: 0, fontSize: '0.9rem'}}>Plan: <span style={{textTransform:'capitalize', fontWeight:'600', color: 'var(--text)'}}>{userPlan}</span> | Agreements: {agreementCount}</p>
                                 </div>
-                                
-                                <div className="pdf-content" style={{fontSize: '10px', color: '#666'}}>
-                                    <strong>Cryptographic Proof:</strong> This document is a printed record of a digital agreement sealed on the Shannon network. The unique fingerprint of this agreement is <strong>{a.agreement_hash}</strong>. Any alteration to the original digital text will invalidate this fingerprint.
-                                </div>
-
-                                <div className="pdf-footer">
-                                    <div className="signature-box">
-                                        Party A Signature (Digital)<br/><br/><br/>
-                                        <span style={{fontFamily: 'monospace', fontSize: '10px'}}>{a.party_a_wallet}</span>
+                                {!isActive ? (
+                                    <div style={{background: '#fee2e2', color: '#991b1b', padding: '8px 16px', borderRadius: '6px', fontSize: '0.9rem', fontWeight: '500'}}>
+                                        Account Inactive
                                     </div>
-                                    <div className="signature-box">
-                                        Party B Signature (Digital)<br/><br/><br/>
-                                        <span style={{fontFamily: 'monospace', fontSize: '10px'}}>{a.party_b_wallet}</span>
-                                    </div>
-                                </div>
+                                ) : (
+                                    <button onClick={() => { setCurrentView('create'); window.scrollTo(0,0); }} disabled={limitReached}>
+                                        {limitReached ? 'Limit Reached' : '+ New Agreement'}
+                                    </button>
+                                )}
                             </div>
-                        ))}
+                        </div>
+
+                        {currentView === 'create' && (
+                            <div className="card" style={{maxWidth: '600px', margin: '0 auto'}}>
+                                <h3 style={{marginBottom: '24px'}}>Draft New Agreement</h3>
+                                <form onSubmit={createAgreement}>
+                                    <label>Party A Details (Optional)</label>
+                                    <input type="text" placeholder="Your name or company" value={partyADetails} onChange={e => setPartyADetails(e.target.value)} disabled={!isActive} />
+                                    
+                                    <label>Party B Email</label>
+                                    <input type="email" placeholder="client@example.com" value={partyBEmail} onChange={e => setPartyBEmail(e.target.value)} required disabled={!isActive} />
+                                    
+                                    <label>Party B Details (Optional)</label>
+                                    <input type="text" placeholder="Client's name or company" value={partyBDetails} onChange={e => setPartyBDetails(e.target.value)} disabled={!isActive} />
+
+                                    <label>Terms of Agreement</label>
+                                    <textarea placeholder="Describe the work, payment, and deadlines..." rows="5" value={text} onChange={e => setText(e.target.value)} required disabled={!isActive} />
+                                    
+                                    <div style={{display: 'flex', gap: '12px', marginTop: '16px'}}>
+                                        <button type="button" className="btn-outline" onClick={() => setCurrentView('list')}>Cancel</button>
+                                        <button type="submit" disabled={!isActive || submitting}>{submitting ? 'Generating...' : 'Create Draft'}</button>
+                                    </div>
+                                </form>
+                            </div>
+                        )}
+
+                        {currentView === 'list' && (
+                            <div>
+                                {agreements.length === 0 && <p style={{textAlign: 'center', marginTop: '40px'}}>No agreements yet. Click "+ New Agreement" to start.</p>}
+                                {agreements.map(a => (
+                                    <div key={a.id} className="card" style={{marginBottom: '16px'}}>
+                                        <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '16px'}}>
+                                            <div>
+                                                <h3 style={{margin: 0}}>Agreement with {a.party_b_wallet}</h3>
+                                                <p style={{margin: 0, fontSize: '0.85rem'}}>Created: {new Date(a.created_at).toLocaleDateString()}</p>
+                                            </div>
+                                            <div style={{padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600', background: a.status === 'sealed' ? '#dcfce7' : '#fef9c3', color: a.status === 'sealed' ? '#166534' : '#854d0e', height: 'fit-content'}}>
+                                                {a.status.toUpperCase()}
+                                            </div>
+                                        </div>
+                                        <p style={{color: 'var(--text)', fontStyle: 'italic', marginBottom: '24px'}}>"{a.agreement_text}"</p>
+                                        <div style={{display: 'flex', gap: '12px', flexWrap: 'wrap'}}>
+                                            <button className="btn-outline" style={{padding: '8px 16px', fontSize: '0.9rem'}} onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/?sign=${a.id}`); alert("Link copied!"); }}>Copy Sign Link</button>
+                                            {a.status === 'sealed' && <button className="btn-success" style={{padding: '8px 16px', fontSize: '0.9rem'}} onClick={() => printPDF(a)}>Download PDF</button>}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
-                    <div className="no-print">
-                        <div style={{display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', flexWrap: 'wrap'}}>
-                            <h2 style={{margin: 0}}>Dashboard</h2>
-                            {isFoundingMember && <span className="founding-badge">⭐ Founding Member</span>}
-                            {isActive && <span style={{background: 'var(--card)', border: '1px solid var(--border)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600', textTransform: 'capitalize'}}>Plan: {userPlan}</span>}
-                        </div>
-                        
-                        <div className="card">
-                            <h3>Subscription Status</h3>
-                            {isActive ? (
-                                <div>
-                                    <p style={{color: 'var(--success)', fontWeight: '600'}}>✅ Active - Your trust layer is online.</p>
-                                    {userPlan !== 'enterprise' && (
-                                        <p style={{fontSize: '0.9rem', color: 'var(--muted)', marginTop: '8px'}}>
-                                            Agreements used: {agreementCount} / {userPlan === 'individual' ? '15' : '25'}
-                                        </p>
-                                    )}
+                    {/* HIDDEN PRINT SECTION */}
+                    <div id="print-section" style={{display: 'none'}}>
+                        {selectedAgreement && (
+                            <div className="document-paper">
+                                <h1>SHANNON AGREEMENT</h1>
+                                <div className="field">
+                                    <strong>Date of Record:</strong>
+                                    <span className="underline">{new Date(selectedAgreement.created_at).toLocaleString()}</span>
                                 </div>
-                            ) : (
-                                <div>
-                                    <p style={{color: 'var(--danger)', fontWeight: '600'}}>🔒 Inactive - Payment Required.</p>
-                                    <p>Send payment to:</p>
-                                    <div className="wallet-box">{TRUST_WALLET}</div>
-                                    <p style={{fontSize: '0.9rem', color: 'var(--text)', marginTop: '12px'}}>After paying, email <strong>vision.ktygroup@gmail.com</strong> with your account email and wallet address.</p>
+                                <div className="field">
+                                    <strong>Party A (Creator):</strong>
+                                    <span className="underline">{selectedAgreement.party_a_wallet}</span>
                                 </div>
-                            )}
-                        </div>
-
-                        <div className="card">
-                            <h3>Create New Agreement</h3>
-                            <form onSubmit={createAgreement}>
-                                <input type="email" placeholder="Party B Email (The other person)" value={partyBEmail} onChange={e => setPartyBEmail(e.target.value)} required disabled={!isActive || limitReached} />
-                                <textarea placeholder="What is the agreement?" rows="3" value={text} onChange={e => setText(e.target.value)} required disabled={!isActive || limitReached} />
-                                <button type="submit" disabled={!isActive || submitting || limitReached} style={{marginTop: '12px'}}>
-                                    {submitting ? 'Creating...' : limitReached ? 'Limit Reached (Upgrade Plan)' : (isActive ? 'Create Agreement' : 'Locked')}
-                                </button>
-                            </form>
-                        </div>
-
-                        <div className="card">
-                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
-                                <h3 style={{margin: 0}}>Your Agreements</h3>
-                                <div style={{display: 'flex', gap: '8px'}}>
-                                    <button onClick={fetchAgreements} style={{padding: '6px 12px', fontSize: '0.8rem', width: 'auto'}}>🔄 Refresh</button>
-                                    <button onClick={printPDF} style={{padding: '6px 12px', fontSize: '0.8rem', width: 'auto', background: 'var(--success)'}}>📄 Save as PDF</button>
+                                <div className="field">
+                                    <strong>Party B (Signer):</strong>
+                                    <span className="underline">{selectedAgreement.party_b_wallet}</span>
                                 </div>
-                            </div>
-                            
-                            {agreements.map(a => (
-                                <div key={a.id} className={`certificate-box ${a.status === 'sealed' ? 'sealed' : a.status === 'denied' ? 'denied' : 'pending'}`}>
-                                    <div className="watermark">SHANNON</div>
-                                    <div className="cert-content">
-                                        <span className={`seal ${a.status === 'sealed' ? 'sealed' : a.status === 'denied' ? 'denied' : 'pending'}`}>
-                                            {a.status === 'sealed' ? '🛡️ Certified' : a.status === 'denied' ? '❌ Denied' : '⏳ Pending'}
-                                        </span>
-                                        <p><strong>To:</strong> {a.party_b_wallet}</p>
-                                        <p style={{color: 'var(--text)'}}>{a.agreement_text}</p>
-                                        
-                                        {a.status === 'pending' && (
-                                            <div style={{background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '8px', marginTop: '12px', border: '1px solid var(--border)'}}>
-                                                <p style={{margin: '0 0 8px 0', fontSize: '0.85rem'}}>Send link to Party B:</p>
-                                                <div style={{display: 'flex', gap: '8px'}}>
-                                                    <button onClick={() => sendWhatsApp(a.id)} style={{flex: 1, background: '#25D366', color: 'white', padding: '10px', fontSize: '0.85rem'}}>WhatsApp</button>
-                                                    <button onClick={() => copyLink(a.id)} style={{flex: 1, background: 'var(--primary)', color: 'var(--dark)', padding: '10px', fontSize: '0.85rem'}}>Copy Link</button>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        <p style={{fontSize: '0.75rem', color: 'var(--muted)', borderTop: '1px solid var(--border)', paddingTop: '12px', marginTop: '12px'}}>
-                                            Hash: {a.agreement_hash} | {new Date(a.created_at).toLocaleString()}
-                                        </p>
+                                <div className="field">
+                                    <strong>Terms of Agreement:</strong>
+                                    <div className="agreement-text">"{selectedAgreement.agreement_text}"</div>
+                                </div>
+                                <div className="field" style={{marginTop: '40px', fontSize: '0.85rem', color: '#666'}}>
+                                    <strong>Cryptographic Proof:</strong>
+                                    This document is a printed record of a digital agreement sealed on the Shannon network. The unique fingerprint of this agreement is <strong>{selectedAgreement.agreement_hash}</strong>.
+                                </div>
+                                <div className="signatures">
+                                    <div className="signature-box">
+                                        Party A Signature<br/><br/><br/>
+                                        <span style={{fontFamily: 'monospace'}}>{selectedAgreement.party_a_wallet}</span>
+                                    </div>
+                                    <div className="signature-box">
+                                        Party B Signature<br/><br/><br/>
+                                        <span style={{fontFamily: 'monospace'}}>{selectedAgreement.party_b_wallet}</span>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             );
@@ -612,15 +554,9 @@
 
             const fetchAgreement = async () => {
                 const { data, error } = await supabase.from('agreements').select('*').eq('id', agreementId).single();
-                if (error || !data) {
-                    setError('Agreement not found.');
-                } else {
-                    if (data.party_b_wallet.toLowerCase() !== session.user.email.toLowerCase()) {
-                        setError(`Access Denied. This agreement was sent to a different email address.`);
-                    } else {
-                        setAgreement(data);
-                    }
-                }
+                if (error || !data) setError('Agreement not found.');
+                else if (data.party_b_wallet.toLowerCase() !== session.user.email.toLowerCase()) setError('Access Denied. This agreement was sent to a different email address.');
+                else setAgreement(data);
                 setLoading(false);
             };
 
@@ -628,42 +564,67 @@
                 const { error } = await supabase.from('agreements')
                     .update({ party_b_status: decision, status: decision === 'accepted' ? 'sealed' : 'denied' })
                     .eq('id', agreement.id);
-                
                 if (error) alert("Error: " + error.message);
-                else {
-                    setAgreement({ ...agreement, party_b_status: decision, status: decision === 'accepted' ? 'sealed' : 'denied' });
-                }
+                else setAgreement({ ...agreement, party_b_status: decision, status: decision === 'accepted' ? 'sealed' : 'denied' });
             };
 
-            if (loading) return <div className="page-container"><h2>Loading...</h2></div>;
-            if (error) return <div className="page-container"><h2 style={{color: 'var(--danger)'}}>{error}</h2></div>;
+            if (loading) return <div className="container"><h2>Loading...</h2></div>;
+            if (error) return <div className="container"><h2 style={{color: 'var(--danger)'}}>{error}</h2></div>;
 
             return (
-                <div className="page-container">
-                    <h2>Review Agreement</h2>
-                    <div className={`certificate-box ${agreement.status === 'sealed' ? 'sealed' : agreement.status === 'denied' ? 'denied' : 'pending'}`}>
-                        <div className="watermark">SHANNON</div>
-                        <div className="cert-content">
-                            <span className={`seal ${agreement.status === 'sealed' ? 'sealed' : agreement.status === 'denied' ? 'denied' : 'pending'}`}>
-                                {agreement.status === 'sealed' ? '🛡️ Sealed' : agreement.status === 'denied' ? '❌ Denied' : '⏳ Pending'}
-                            </span>
-                            <p><strong>From:</strong> {agreement.party_a_wallet}</p>
-                            <p style={{color: 'var(--text)'}}>{agreement.agreement_text}</p>
-                            
-                            {agreement.status === 'pending' && (
-                                <div style={{display: 'flex', gap: '10px', marginTop: '16px'}}>
-                                    <button onClick={() => handleSign('accepted')} className="btn-success" style={{flex: 1}}>Accept & Sign</button>
-                                    <button onClick={() => handleSign('denied')} className="btn-danger" style={{flex: 1}}>Deny</button>
-                                </div>
-                            )}
-                            
-                            {agreement.status === 'sealed' && <p style={{color: 'var(--success)', fontWeight: '600', marginTop: '16px'}}>Signed successfully. Party A has been notified.</p>}
-                            {agreement.status === 'denied' && <p style={{color: 'var(--danger)', fontWeight: '600', marginTop: '16px'}}>You have rejected this agreement.</p>}
-                            
-                            <p style={{fontSize: '0.75rem', color: 'var(--muted)', borderTop: '1px solid var(--border)', paddingTop: '12px', marginTop: '16px'}}>
-                                Hash: {agreement.agreement_hash}
-                            </p>
+                <div className="container">
+                    <div className="no-print" style={{marginBottom: '24px', textAlign: 'center'}}>
+                        <h2>Review Agreement</h2>
+                        <p>Please review the terms below. By clicking Accept, you agree to the terms.</p>
+                    </div>
+
+                    <div className="document-paper">
+                        <h1>SHANNON AGREEMENT</h1>
+                        <div className="field">
+                            <strong>Date of Record:</strong>
+                            <span className="underline">{new Date(agreement.created_at).toLocaleString()}</span>
                         </div>
+                        <div className="field">
+                            <strong>Party A (Creator):</strong>
+                            <span className="underline">{agreement.party_a_wallet}</span>
+                        </div>
+                        <div className="field">
+                            <strong>Party B (Signer):</strong>
+                            <span className="underline">{agreement.party_b_wallet}</span>
+                        </div>
+                        <div className="field">
+                            <strong>Terms of Agreement:</strong>
+                            <div className="agreement-text">"{agreement.agreement_text}"</div>
+                        </div>
+                        <div className="field" style={{marginTop: '40px', fontSize: '0.85rem', color: '#666'}}>
+                            <strong>Cryptographic Proof:</strong>
+                            The unique fingerprint of this agreement is <strong>{agreement.agreement_hash}</strong>.
+                        </div>
+                        <div className="signatures">
+                            <div className="signature-box">
+                                Party A Signature<br/><br/><br/>
+                                <span style={{fontFamily: 'monospace'}}>{agreement.party_a_wallet}</span>
+                            </div>
+                            <div className="signature-box">
+                                Party B Signature<br/><br/><br/>
+                                <span style={{fontFamily: 'monospace'}}>{agreement.party_b_wallet}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="no-print" style={{display: 'flex', gap: '16px', maxWidth: '400px', margin: '0 auto', flexDirection: 'column'}}>
+                        {agreement.status === 'pending' ? (
+                            <>
+                                <button className="btn-success" onClick={() => handleSign('accepted')}>Accept & Sign</button>
+                                <button className="btn-danger" onClick={() => handleSign('denied')}>Deny</button>
+                            </>
+                        ) : (
+                            <div style={{textAlign: 'center', padding: '20px', background: '#f1f5f9', borderRadius: '8px'}}>
+                                <h3 style={{color: agreement.status === 'sealed' ? 'var(--success)' : 'var(--danger)'}}>
+                                    {agreement.status === 'sealed' ? 'Agreement Sealed Successfully' : 'Agreement Denied'}
+                                </h3>
+                            </div>
+                        )}
                     </div>
                 </div>
             );
@@ -676,44 +637,34 @@
                 const { data } = await supabase.from('users').select('*').order('created_at', { ascending: false });
                 if (data) setUsers(data);
             };
-            
             const toggleActive = async (id, currentStatus) => {
                 const { error } = await supabase.from('users').update({ is_active: !currentStatus }).eq('id', id);
                 if (error) alert(error.message); else fetchUsers();
             };
-
             const changePlan = async (id, newPlan) => {
                 const { error } = await supabase.from('users').update({ plan_type: newPlan }).eq('id', id);
                 if (error) alert(error.message); else fetchUsers();
             };
-
             return (
-                <div className="page-container">
-                    <h2 style={{color: 'var(--danger)', marginBottom: '24px'}}>Owner Panel</h2>
+                <div className="container">
+                    <h2 style={{marginBottom: '32px'}}>Owner Panel</h2>
                     <div className="card">
-                        <h3>User Management</h3>
+                        <h3 style={{marginBottom: '24px'}}>User Management</h3>
                         {users.map(u => (
-                            <div key={u.id} className="user-row" style={{flexDirection: 'column', alignItems: 'flex-start', gap: '10px'}}>
-                                <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center'}}>
-                                    <p style={{margin: 0, fontWeight: '600', fontSize: '0.95rem', color: 'var(--text)'}}>{u.email}</p>
-                                    <button onClick={() => toggleActive(u.id, u.is_active)} className={`toggle-btn ${u.is_active ? 'btn-success' : 'btn-danger'}`}>
-                                        {u.is_active ? "ACTIVE" : "LOCKED"}
-                                    </button>
+                            <div key={u.id} style={{display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px 0', borderBottom: '1px solid var(--border)'}}>
+                                <div>
+                                    <p style={{margin: 0, fontWeight: '600', fontSize: '1rem'}}>{u.email}</p>
+                                    <p style={{margin: 0, fontSize: '0.85rem', color: 'var(--muted)'}}>Agreements Used: {u.agreements_count || 0}</p>
                                 </div>
-                                <div style={{display: 'flex', gap: '10px', width: '100%', alignItems: 'center'}}>
-                                    <span style={{fontSize: '0.8rem', color: 'var(--muted)'}}>Plan:</span>
-                                    <select 
-                                        value={u.plan_type || 'individual'} 
-                                        onChange={(e) => changePlan(u.id, e.target.value)}
-                                        style={{padding: '4px', borderRadius: '4px', background: 'var(--dark)', color: 'white', border: '1px solid var(--border)', fontSize: '0.85rem'}}
-                                    >
+                                <div style={{display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap'}}>
+                                    <select value={u.plan_type || 'individual'} onChange={(e) => changePlan(u.id, e.target.value)} style={{padding: '8px', borderRadius: '4px', border: '1px solid var(--border)', background: 'var(--bg)'}}>
                                         <option value="individual">Individual</option>
                                         <option value="agency">Agency</option>
                                         <option value="enterprise">Enterprise</option>
                                     </select>
-                                    <span style={{fontSize: '0.8rem', color: 'var(--muted)', marginLeft: 'auto'}}>
-                                        Used: {u.agreements_count || 0}
-                                    </span>
+                                    <button onClick={() => toggleActive(u.id, u.is_active)} className={u.is_active ? "btn-success" : "btn-outline"} style={{padding: '8px 16px', fontSize: '0.85rem', width: 'auto'}}>
+                                        {u.is_active ? "Active" : "Locked"}
+                                    </button>
                                 </div>
                             </div>
                         ))}
