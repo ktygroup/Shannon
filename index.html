@@ -385,8 +385,8 @@
             const [agreementCount, setAgreementCount] = useState(0);
             const [limitReached, setLimitReached] = useState(false);
             
-            const [activeTab, setActiveTab] = useState('created'); // 'created' or 'signed'
-            const [currentView, setCurrentView] = useState('list'); // 'list' or 'create'
+            const [activeTab, setActiveTab] = useState('created'); 
+            const [currentView, setCurrentView] = useState('list'); 
             const [selectedAgreement, setSelectedAgreement] = useState(null);
 
             useEffect(() => { fetchUserStatus(); fetchAgreements(); }, []);
@@ -405,11 +405,9 @@
             };
 
             const fetchAgreements = async () => {
-                // Fetch agreements created by user (Party A)
                 const { data: created } = await supabase.from('agreements').select('*').eq('created_by', session.user.id).order('created_at', { ascending: false });
                 if (created) setCreatedAgreements(created);
 
-                // Fetch agreements where user is Party B (email matches)
                 const { data: signed } = await supabase.from('agreements').select('*').eq('party_b_wallet', session.user.email).order('created_at', { ascending: false });
                 if (signed) setSignedAgreements(signed);
             };
@@ -546,9 +544,9 @@
                                                     <div>
                                                         <h3 style={{margin: 0}}>From: {a.party_a_wallet}</h3>
                                                         <p style={{margin: 0, fontSize: '0.85rem'}}>Created: {new Date(a.created_at).toLocaleString()}</p>
-                                                        {a.status !== 'pending' && (
+                                                        {a.party_b_action_at && (
                                                             <p style={{margin: 0, fontSize: '0.85rem', fontWeight: 'bold', color: a.status === 'sealed' ? 'var(--success)' : 'var(--danger)'}}>
-                                                                You {a.status === 'sealed' ? 'accepted' : 'denied'} this on: {new Date(a.created_at).toLocaleString()}
+                                                                You {a.status === 'sealed' ? 'accepted' : 'denied'} this on: {new Date(a.party_b_action_at).toLocaleString()}
                                                             </p>
                                                         )}
                                                     </div>
@@ -578,6 +576,12 @@
                                     <strong>Date Created:</strong>
                                     <span className="underline">{new Date(selectedAgreement.created_at).toLocaleString()}</span>
                                 </div>
+                                {selectedAgreement.party_b_action_at && (
+                                    <div className="field">
+                                        <strong>Date Signed/Denied by Party B:</strong>
+                                        <span className="underline">{new Date(selectedAgreement.party_b_action_at).toLocaleString()}</span>
+                                    </div>
+                                )}
                                 <div className="field">
                                     <strong>Party A (Creator):</strong>
                                     <span className="underline">{selectedAgreement.party_a_wallet}</span>
@@ -634,10 +638,14 @@
 
             const handleSign = async (decision) => {
                 const { error } = await supabase.from('agreements')
-                    .update({ party_b_status: decision, status: decision === 'accepted' ? 'sealed' : 'denied' })
+                    .update({ 
+                        party_b_status: decision, 
+                        status: decision === 'accepted' ? 'sealed' : 'denied',
+                        party_b_action_at: new Date().toISOString() // RECORDING EXACT TIME OF ACTION
+                    })
                     .eq('id', agreement.id);
                 if (error) alert("Error: " + error.message);
-                else setAgreement({ ...agreement, party_b_status: decision, status: decision === 'accepted' ? 'sealed' : 'denied' });
+                else setAgreement({ ...agreement, party_b_status: decision, status: decision === 'accepted' ? 'sealed' : 'denied', party_b_action_at: new Date().toISOString() });
             };
 
             if (loading) return <div className="container"><h2>Loading...</h2></div>;
@@ -656,6 +664,12 @@
                             <strong>Date Created:</strong>
                             <span className="underline">{new Date(agreement.created_at).toLocaleString()}</span>
                         </div>
+                        {agreement.party_b_action_at && (
+                            <div className="field">
+                                <strong>Date Signed/Denied:</strong>
+                                <span className="underline">{new Date(agreement.party_b_action_at).toLocaleString()}</span>
+                            </div>
+                        )}
                         <div className="field">
                             <strong>Party A (Creator):</strong>
                             <span className="underline">{agreement.party_a_wallet}</span>
