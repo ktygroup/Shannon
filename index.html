@@ -60,6 +60,13 @@
         .btn-outline:hover { background: #f1f5f9; }
         .btn-danger { background: var(--danger); color: white; }
         .btn-success { background: var(--success); color: white; }
+        .btn-wa { background: #25D366; color: white; border: none; }
+
+        /* TABS */
+        .tabs { display: flex; gap: 12px; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 12px; overflow-x: auto; }
+        .tab { padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; color: var(--muted); background: transparent; width: auto; border: none; font-size: 0.95rem; }
+        .tab.active { background: var(--text); color: #fff; }
+        .tab:hover:not(.active) { background: #e2e8f0; }
 
         /* FORMS */
         input, textarea { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 1rem; margin-bottom: 16px; outline: none; transition: border-color 0.2s; background: var(--bg); }
@@ -367,7 +374,8 @@
 
         function UserDashboard({ session }) {
             const [isActive, setIsActive] = useState(false);
-            const [agreements, setAgreements] = useState([]);
+            const [createdAgreements, setCreatedAgreements] = useState([]);
+            const [signedAgreements, setSignedAgreements] = useState([]);
             const [partyBEmail, setPartyBEmail] = useState('');
             const [partyBDetails, setPartyBDetails] = useState('');
             const [partyADetails, setPartyADetails] = useState('');
@@ -376,7 +384,9 @@
             const [userPlan, setUserPlan] = useState('individual');
             const [agreementCount, setAgreementCount] = useState(0);
             const [limitReached, setLimitReached] = useState(false);
-            const [currentView, setCurrentView] = useState('list');
+            
+            const [activeTab, setActiveTab] = useState('created'); // 'created' or 'signed'
+            const [currentView, setCurrentView] = useState('list'); // 'list' or 'create'
             const [selectedAgreement, setSelectedAgreement] = useState(null);
 
             useEffect(() => { fetchUserStatus(); fetchAgreements(); }, []);
@@ -395,8 +405,13 @@
             };
 
             const fetchAgreements = async () => {
-                const { data } = await supabase.from('agreements').select('*').eq('created_by', session.user.id).order('created_at', { ascending: false });
-                if (data) setAgreements(data);
+                // Fetch agreements created by user (Party A)
+                const { data: created } = await supabase.from('agreements').select('*').eq('created_by', session.user.id).order('created_at', { ascending: false });
+                if (created) setCreatedAgreements(created);
+
+                // Fetch agreements where user is Party B (email matches)
+                const { data: signed } = await supabase.from('agreements').select('*').eq('party_b_wallet', session.user.email).order('created_at', { ascending: false });
+                if (signed) setSignedAgreements(signed);
             };
 
             const createAgreement = async (e) => {
@@ -491,26 +506,65 @@
 
                         {currentView === 'list' && (
                             <div>
-                                {agreements.length === 0 && <p style={{textAlign: 'center', marginTop: '40px'}}>No agreements yet. Click "+ New Agreement" to start.</p>}
-                                {agreements.map(a => (
-                                    <div key={a.id} className="card" style={{marginBottom: '16px'}}>
-                                        <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '16px'}}>
-                                            <div>
-                                                <h3 style={{margin: 0}}>Agreement with {a.party_b_wallet}</h3>
-                                                <p style={{margin: 0, fontSize: '0.85rem'}}>Created: {new Date(a.created_at).toLocaleDateString()}</p>
+                                <div className="tabs">
+                                    <button className={`tab ${activeTab === 'created' ? 'active' : ''}`} onClick={() => setActiveTab('created')}>My Created Agreements</button>
+                                    <button className={`tab ${activeTab === 'signed' ? 'active' : ''}`} onClick={() => setActiveTab('signed')}>Agreements Sent to Me</button>
+                                </div>
+
+                                {activeTab === 'created' && (
+                                    <div>
+                                        {createdAgreements.length === 0 && <p style={{textAlign: 'center', marginTop: '40px'}}>You haven't created any agreements yet.</p>}
+                                        {createdAgreements.map(a => (
+                                            <div key={a.id} className="card" style={{marginBottom: '16px'}}>
+                                                <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '10px'}}>
+                                                    <div>
+                                                        <h3 style={{margin: 0}}>To: {a.party_b_wallet}</h3>
+                                                        <p style={{margin: 0, fontSize: '0.85rem'}}>Created: {new Date(a.created_at).toLocaleString()}</p>
+                                                    </div>
+                                                    <div style={{padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600', background: a.status === 'sealed' ? '#dcfce7' : a.status === 'denied' ? '#fee2e2' : '#fef9c3', color: a.status === 'sealed' ? '#166534' : a.status === 'denied' ? '#991b1b' : '#854d0e', height: 'fit-content'}}>
+                                                        {a.status.toUpperCase()}
+                                                    </div>
+                                                </div>
+                                                <p style={{color: 'var(--text)', fontStyle: 'italic', marginBottom: '24px'}}>"{a.agreement_text}"</p>
+                                                
+                                                <div style={{display: 'flex', gap: '12px', flexWrap: 'wrap'}}>
+                                                    <button className="btn-outline" style={{padding: '8px 16px', fontSize: '0.9rem'}} onClick={() => copyLink(a.id)}>Copy Link</button>
+                                                    <button className="btn-wa" style={{padding: '8px 16px', fontSize: '0.9rem'}} onClick={() => sendWhatsApp(a.id)}>WhatsApp</button>
+                                                    <button className="btn-success" style={{padding: '8px 16px', fontSize: '0.9rem'}} onClick={() => printPDF(a)}>Download PDF</button>
+                                                </div>
                                             </div>
-                                            <div style={{padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600', background: a.status === 'sealed' ? '#dcfce7' : '#fef9c3', color: a.status === 'sealed' ? '#166534' : '#854d0e', height: 'fit-content'}}>
-                                                {a.status.toUpperCase()}
-                                            </div>
-                                        </div>
-                                        <p style={{color: 'var(--text)', fontStyle: 'italic', marginBottom: '24px'}}>"{a.agreement_text}"</p>
-                                        <div style={{display: 'flex', gap: '12px', flexWrap: 'wrap'}}>
-                                            <button className="btn-outline" style={{padding: '8px 16px', fontSize: '0.9rem'}} onClick={() => copyLink(a.id)}>Copy Sign Link</button>
-                                            <button className="btn-outline" style={{padding: '8px 16px', fontSize: '0.9rem', background: '#25D366', color: 'white', border: 'none'}} onClick={() => sendWhatsApp(a.id)}>WhatsApp</button>
-                                            {a.status === 'sealed' && <button className="btn-success" style={{padding: '8px 16px', fontSize: '0.9rem'}} onClick={() => printPDF(a)}>Download PDF</button>}
-                                        </div>
+                                        ))}
                                     </div>
-                                ))}
+                                )}
+
+                                {activeTab === 'signed' && (
+                                    <div>
+                                        {signedAgreements.length === 0 && <p style={{textAlign: 'center', marginTop: '40px'}}>No one has sent you an agreement yet.</p>}
+                                        {signedAgreements.map(a => (
+                                            <div key={a.id} className="card" style={{marginBottom: '16px'}}>
+                                                <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '10px'}}>
+                                                    <div>
+                                                        <h3 style={{margin: 0}}>From: {a.party_a_wallet}</h3>
+                                                        <p style={{margin: 0, fontSize: '0.85rem'}}>Created: {new Date(a.created_at).toLocaleString()}</p>
+                                                        {a.status !== 'pending' && (
+                                                            <p style={{margin: 0, fontSize: '0.85rem', fontWeight: 'bold', color: a.status === 'sealed' ? 'var(--success)' : 'var(--danger)'}}>
+                                                                You {a.status === 'sealed' ? 'accepted' : 'denied'} this on: {new Date(a.created_at).toLocaleString()}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    <div style={{padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600', background: a.status === 'sealed' ? '#dcfce7' : a.status === 'denied' ? '#fee2e2' : '#fef9c3', color: a.status === 'sealed' ? '#166534' : a.status === 'denied' ? '#991b1b' : '#854d0e', height: 'fit-content'}}>
+                                                        {a.status.toUpperCase()}
+                                                    </div>
+                                                </div>
+                                                <p style={{color: 'var(--text)', fontStyle: 'italic', marginBottom: '24px'}}>"{a.agreement_text}"</p>
+                                                
+                                                <div style={{display: 'flex', gap: '12px', flexWrap: 'wrap'}}>
+                                                    <button className="btn-success" style={{padding: '8px 16px', fontSize: '0.9rem'}} onClick={() => printPDF(a)}>Download PDF</button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
@@ -521,7 +575,7 @@
                             <div className="document-paper">
                                 <h1>SHANNON AGREEMENT</h1>
                                 <div className="field">
-                                    <strong>Date of Record:</strong>
+                                    <strong>Date Created:</strong>
                                     <span className="underline">{new Date(selectedAgreement.created_at).toLocaleString()}</span>
                                 </div>
                                 <div className="field">
@@ -536,9 +590,15 @@
                                     <strong>Terms of Agreement:</strong>
                                     <div className="agreement-text">"{selectedAgreement.agreement_text}"</div>
                                 </div>
+                                <div className="field">
+                                    <strong>Status:</strong>
+                                    <span className="underline" style={{fontWeight: 'bold', color: selectedAgreement.status === 'sealed' ? 'green' : selectedAgreement.status === 'denied' ? 'red' : 'orange'}}>
+                                        {selectedAgreement.status.toUpperCase()}
+                                    </span>
+                                </div>
                                 <div className="field" style={{marginTop: '40px', fontSize: '0.85rem', color: '#666'}}>
                                     <strong>Cryptographic Proof:</strong>
-                                    This document is a printed record of a digital agreement sealed on the Shannon network. The unique fingerprint of this agreement is <strong>{selectedAgreement.agreement_hash}</strong>.
+                                    The unique fingerprint of this agreement is <strong>{selectedAgreement.agreement_hash}</strong>.
                                 </div>
                                 <div className="signatures">
                                     <div className="signature-box">
@@ -593,7 +653,7 @@
                     <div className="document-paper">
                         <h1>SHANNON AGREEMENT</h1>
                         <div className="field">
-                            <strong>Date of Record:</strong>
+                            <strong>Date Created:</strong>
                             <span className="underline">{new Date(agreement.created_at).toLocaleString()}</span>
                         </div>
                         <div className="field">
@@ -607,6 +667,12 @@
                         <div className="field">
                             <strong>Terms of Agreement:</strong>
                             <div className="agreement-text">"{agreement.agreement_text}"</div>
+                        </div>
+                        <div className="field">
+                            <strong>Status:</strong>
+                            <span className="underline" style={{fontWeight: 'bold', color: agreement.status === 'sealed' ? 'green' : agreement.status === 'denied' ? 'red' : 'orange'}}>
+                                {agreement.status.toUpperCase()}
+                            </span>
                         </div>
                         <div className="field" style={{marginTop: '40px', fontSize: '0.85rem', color: '#666'}}>
                             <strong>Cryptographic Proof:</strong>
